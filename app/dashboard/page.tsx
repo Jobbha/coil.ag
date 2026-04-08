@@ -81,7 +81,7 @@ export default function DashboardPage() {
               {selectedToken ? (
                 <div key={selectedToken.mint} className="animate-fadeIn space-y-4">
                   <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4">
-                    <div className="order-2 lg:order-1 lg:col-span-9">
+                    <div className="lg:col-span-9">
                       <PriceChart
                         mint={selectedToken.mint}
                         symbol={selectedToken.symbol}
@@ -90,7 +90,7 @@ export default function DashboardPage() {
                         targetPrice={liveTargetPrice}
                       />
                     </div>
-                    <div className="order-1 lg:order-2 lg:col-span-3">
+                    <div className="lg:col-span-3">
                       <div className="glass-card p-3 md:p-4 max-h-[calc(100vh-180px)] overflow-y-auto">
                         <SetupForm
                           token={selectedToken}

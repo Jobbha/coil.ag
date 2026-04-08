@@ -199,7 +199,7 @@ export default function PriceChart({ mint, symbol, spotPrice, priceChange24h, ta
   }
 
   return (
-    <div className="glass-card overflow-hidden h-full flex flex-col">
+    <div className="glass-card overflow-hidden min-h-[350px] md:min-h-[500px] h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-3 md:px-4 pt-3 pb-2 flex-wrap gap-2">
         <div className="flex items-baseline gap-2 md:gap-3">
