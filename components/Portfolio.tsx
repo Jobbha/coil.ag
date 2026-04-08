@@ -51,7 +51,7 @@ export default function Portfolio({ orders }: Props) {
   return (
     <div className="glass-card">
       {/* Header */}
-      <div className="px-5 pt-4 pb-4 border-b border-border-subtle">
+      <div className="px-3 md:px-5 pt-3 md:pt-4 pb-3 md:pb-4 border-b border-border-subtle">
         <div className="flex items-center gap-2 mb-4">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-mint">
             <rect x="1" y="6" width="4" height="9" rx="1" stroke="currentColor" strokeWidth="1.5" />
@@ -62,7 +62,7 @@ export default function Portfolio({ orders }: Props) {
         </div>
 
         {/* Top-level stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
           <StatCard label="Total Deployed" value={`$${totalCapital.toFixed(0)}`} sub={`${active.length} active`} />
           <StatCard label="Total Yield" value={`+$${totalYield.toFixed(4)}`} sub={`$${activeYield.toFixed(4)} active`} color="text-mint" />
           <StatCard label="Effective APY" value={`${weightedApy.toFixed(2)}%`} sub="weighted avg" color="text-mint" />
@@ -71,7 +71,7 @@ export default function Portfolio({ orders }: Props) {
       </div>
 
       {/* Per-token breakdown */}
-      <div className="px-5 py-3">
+      <div className="px-3 md:px-5 py-2 md:py-3">
         <p className="text-xs text-text-dim uppercase tracking-wider mb-2">By Token</p>
         <div className="space-y-2">
           {[...byToken.entries()].map(([mint, data]) => {
@@ -117,7 +117,7 @@ export default function Portfolio({ orders }: Props) {
       </div>
 
       {/* State breakdown */}
-      <div className="px-5 py-3 border-t border-border-subtle">
+      <div className="px-3 md:px-5 py-2 md:py-3 border-t border-border-subtle">
         <p className="text-xs text-text-dim uppercase tracking-wider mb-2">State Breakdown</p>
         <div className="flex items-center gap-2 flex-wrap">
           <StatePill state="LENDING" orders={orders} />
@@ -131,7 +131,7 @@ export default function Portfolio({ orders }: Props) {
 
       {/* P&L Timeline */}
       {totalYield > 0 && (
-        <div className="px-5 py-3 border-t border-border-subtle">
+        <div className="px-3 md:px-5 py-2 md:py-3 border-t border-border-subtle">
           <div className="flex items-center justify-between">
             <p className="text-xs text-text-dim uppercase tracking-wider">Earnings</p>
             <p className="text-xs text-text-dim">{totalHours.toFixed(1)}h total</p>

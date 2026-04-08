@@ -2,85 +2,80 @@
 
 export default function Hero({ onGetStarted }: { onGetStarted?: () => void }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border-subtle bg-gradient-to-br from-bg-card via-bg-shell to-bg-card p-8 md:p-10">
+    <div className="relative overflow-hidden rounded-2xl border border-border-subtle bg-gradient-to-br from-bg-card via-bg-shell to-bg-card p-4 md:p-10">
       {/* Background glow */}
       <div className="absolute -top-20 -right-20 w-72 h-72 bg-mint/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-mint/3 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        {/* Left — copy */}
-        <div className="space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-mint/10 border border-mint/20">
-            <div className="w-1.5 h-1.5 rounded-full bg-mint animate-pulse" />
-            <span className="text-sm font-medium text-mint">Powered by Jupiter</span>
-          </div>
-
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-text-primary leading-tight">
-            Set a limit order.
-            <br />
-            <span className="text-mint">Earn while you wait.</span>
+      <div className="relative">
+        {/* Mobile: compact hero */}
+        <div className="md:hidden space-y-3">
+          <h1 className="text-xl font-bold tracking-tight text-text-primary leading-tight">
+            Set a limit order. <span className="text-mint">Earn while you wait.</span>
           </h1>
-
-          <p className="text-base text-text-secondary leading-relaxed max-w-md">
-            Your capital sits idle in every limit order. Coil changes that — it deposits your USDC into
-            Jupiter Lend to earn yield, then auto-triggers your order when the price is right.
+          <p className="text-sm text-text-secondary leading-relaxed">
+            Idle capital earns yield in Jupiter Lend. Auto-triggers your order when price is right.
           </p>
-
-          <div className="flex items-center gap-3 pt-1">
-            {onGetStarted && (
-              <button
-                onClick={onGetStarted}
-                className="px-6 py-2.5 rounded-xl bg-mint text-white dark:text-bg-base font-semibold text-sm
-                           hover:bg-mint-dark transition-colors shadow-[0_0_20px_var(--mint-glow)] animate-mintPulse"
-              >
-                Pick a token to start
-              </button>
-            )}
-            <a
-              href="#how-it-works"
-              className="px-5 py-2.5 rounded-xl border border-border text-sm font-medium text-text-secondary
-                         hover:text-text-primary hover:border-mint/30 transition-colors"
+          {onGetStarted && (
+            <button
+              onClick={onGetStarted}
+              className="w-full px-5 py-2.5 rounded-xl bg-mint text-bg-base font-semibold text-sm
+                         hover:bg-mint-dark transition-colors shadow-[0_0_20px_var(--mint-glow)] animate-mintPulse"
             >
-              How it works
-            </a>
+              Pick a token to start
+            </button>
+          )}
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border-subtle">
+            <Stat label="APY" value="~5%" sub="Jupiter Lend" />
+            <Stat label="Order" value="OTOCO" sub="TP + SL" />
+            <Stat label="APIs" value="7" sub="Jupiter" />
           </div>
         </div>
 
-        {/* Right — visual steps */}
-        <div className="space-y-3">
-          <Step
-            n="1"
-            title="Choose your entry"
-            desc="Pick a token and set the price you want to buy at"
-            icon={<TargetIcon />}
-          />
-          <Step
-            n="2"
-            title="Capital earns yield"
-            desc="Your USDC earns ~5% APY in Jupiter Lend while waiting"
-            icon={<YieldIcon />}
-            active
-          />
-          <Step
-            n="3"
-            title="Auto-triggers at target"
-            desc="When price approaches, Coil withdraws and places your OTOCO order"
-            icon={<BoltIcon />}
-          />
-          <Step
-            n="4"
-            title="Profit + bonus yield"
-            desc="Order fills at your price — yield earned during the wait is pure bonus"
-            icon={<SparkleIcon />}
-          />
+        {/* Desktop: full hero */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-2 gap-8 items-center">
+            <div className="space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-mint/10 border border-mint/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-mint animate-pulse" />
+                <span className="text-sm font-medium text-mint">Powered by Jupiter</span>
+              </div>
+              <h1 className="text-4xl font-bold tracking-tight text-text-primary leading-tight">
+                Set a limit order.
+                <br />
+                <span className="text-mint">Earn while you wait.</span>
+              </h1>
+              <p className="text-base text-text-secondary leading-relaxed max-w-md">
+                Your capital sits idle in every limit order. Coil changes that — it deposits your USDC into
+                Jupiter Lend to earn yield, then auto-triggers your order when the price is right.
+              </p>
+              <div className="flex items-center gap-3 pt-1">
+                {onGetStarted && (
+                  <button
+                    onClick={onGetStarted}
+                    className="px-6 py-2.5 rounded-xl bg-mint text-bg-base font-semibold text-sm
+                               hover:bg-mint-dark transition-colors shadow-[0_0_20px_var(--mint-glow)] animate-mintPulse"
+                  >
+                    Pick a token to start
+                  </button>
+                )}
+                <a href="#how-it-works" className="px-5 py-2.5 rounded-xl border border-border text-sm font-medium text-text-secondary hover:text-text-primary hover:border-mint/30 transition-colors">
+                  How it works
+                </a>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Step n="1" title="Choose your entry" desc="Pick a token and set the price you want to buy at" icon={<TargetIcon />} />
+              <Step n="2" title="Capital earns yield" desc="Your USDC earns ~5% APY in Jupiter Lend while waiting" icon={<YieldIcon />} active />
+              <Step n="3" title="Auto-triggers at target" desc="When price approaches, Coil withdraws and places your OTOCO order" icon={<BoltIcon />} />
+              <Step n="4" title="Profit + bonus yield" desc="Order fills at your price — yield earned during the wait is pure bonus" icon={<SparkleIcon />} />
+            </div>
+          </div>
+          <div id="how-it-works" className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-border-subtle">
+            <Stat label="Lending APY" value="~5.2%" sub="via Jupiter Lend" />
+            <Stat label="Order Type" value="OTOCO" sub="Entry + TP + SL in one" />
+            <Stat label="APIs Used" value="7" sub="Price, Lend, Trigger, Swap, Tokens, Recurring, Prediction" />
+          </div>
         </div>
-      </div>
-
-      {/* Stats bar */}
-      <div id="how-it-works" className="relative grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-border-subtle">
-        <Stat label="Lending APY" value="~5.2%" sub="via Jupiter Lend" />
-        <Stat label="Order Type" value="OTOCO" sub="Entry + TP + SL in one" />
-        <Stat label="APIs Used" value="5" sub="Price, Lend, Trigger, Swap, Tokens" />
       </div>
     </div>
   );

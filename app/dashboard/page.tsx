@@ -70,18 +70,18 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center py-4 px-4">
+    <div className="flex-1 flex flex-col items-center py-2 px-2 md:py-4 md:px-4">
       <div className="w-full max-w-[1400px] md:w-[90%] lg:w-[80%] app-shell flex flex-col min-h-[92vh]">
         <TopNav activeTab={activeTab} onTabChange={setActiveTab} />
         <TickerStrip onTokenClick={handleTokenSelect} prices={prices} />
 
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-2 md:p-4">
           {activeTab === "Spot" && (
             <div className="space-y-4 animate-fadeIn" key="spot">
               {selectedToken ? (
                 <div key={selectedToken.mint} className="animate-fadeIn space-y-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <div className="lg:col-span-9">
+                  <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4">
+                    <div className="order-2 lg:order-1 lg:col-span-9">
                       <PriceChart
                         mint={selectedToken.mint}
                         symbol={selectedToken.symbol}
@@ -90,8 +90,8 @@ export default function DashboardPage() {
                         targetPrice={liveTargetPrice}
                       />
                     </div>
-                    <div className="lg:col-span-3">
-                      <div className="glass-card p-4 max-h-[calc(100vh-180px)] overflow-y-auto">
+                    <div className="order-1 lg:order-2 lg:col-span-3">
+                      <div className="glass-card p-3 md:p-4 max-h-[calc(100vh-180px)] overflow-y-auto">
                         <SetupForm
                           token={selectedToken}
                           onSubmit={handleOrderSubmit}

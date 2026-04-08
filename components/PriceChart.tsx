@@ -215,19 +215,19 @@ export default function PriceChart({ mint, symbol, spotPrice, priceChange24h, ta
             </>
           )}
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-mint/10 border border-mint/20">
+        <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-full bg-mint/10 border border-mint/20">
           <div className="w-1 h-1 rounded-full bg-mint animate-pulse" />
           <span className="text-sm font-medium text-mint">Earning yield while waiting</span>
         </div>
       </div>
 
       {/* Timeframe buttons + reset */}
-      <div className="flex items-center gap-1 px-4 pb-2">
+      <div className="flex items-center gap-0.5 md:gap-1 px-2 md:px-4 pb-2">
         {["1m", "5m", "15m", "1h", "4h", "1d"].map((tf) => (
           <button
             key={tf}
             onClick={() => handleTimeframe(tf)}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+            className={`px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-md text-[10px] md:text-xs font-medium transition-all ${
               timeframe === tf
                 ? "bg-mint text-bg-base"
                 : "text-text-muted hover:text-text-primary"
@@ -238,7 +238,7 @@ export default function PriceChart({ mint, symbol, spotPrice, priceChange24h, ta
         ))}
         <button
           onClick={() => chartRef.current && zoomToDefault(chartRef.current, timeframe)}
-          className="ml-1 px-2 py-1 rounded-md text-xs font-medium text-text-dim hover:text-text-primary transition-colors"
+          className="ml-1 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[10px] md:text-xs font-medium text-text-dim hover:text-text-primary transition-colors"
           title="Reset zoom"
         >
           ↺

@@ -25,7 +25,7 @@ export default function StatusCard({ order }: Props) {
       : "—";
 
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-3 md:p-5">
       {/* Status header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">

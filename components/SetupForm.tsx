@@ -40,6 +40,7 @@ export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetP
   const [capital, setCapital] = useState("500");
   const [threshold, setThreshold] = useState("3");
   const [showDetails, setShowDetails] = useState(false);
+  const [showTpSl, setShowTpSl] = useState(false);
   const [expandedVault, setExpandedVault] = useState("");
 
   // Yield vault selection
@@ -230,37 +231,60 @@ export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetP
         )}
       </div>
 
-      {/* TP / SL */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="min-w-0">
-          <label className="text-sm text-text-muted mb-0.5 flex items-center gap-1.5">Take Profit <InfoTip text="Auto-sell price above your entry. Part of the OTOCO order — triggers when price rises to this level." /></label>
-          <div className="flex items-center bg-bg-inset rounded-md border border-border px-2 py-1.5">
-            <span className="text-green text-sm mr-1.5">↑</span>
-            <input
-              type="number"
-              step="any"
-              value={takeProfit}
-              onChange={(e) => setTakeProfit(e.target.value)}
-              required
-              className="input-inline flex-1 min-w-0 text-base font-mono text-text-primary"
-            />
+      {/* TP / SL (optional, collapsible) */}
+      <button
+        type="button"
+        onClick={() => setShowTpSl(!showTpSl)}
+        className="flex items-center justify-between w-full text-sm text-text-muted hover:text-text-secondary transition-colors"
+      >
+        <span className="flex items-center gap-1.5">
+          TP / SL
+          <InfoTip text="Optional. Set take-profit and stop-loss to auto-exit. Without these, Coil places a simple limit order." />
+          {!showTpSl && takeProfit && stopLoss && (
+            <span className="text-xs text-text-dim font-mono">
+              <span className="text-green">{parseFloat(takeProfit).toFixed(0)}</span>
+              {" / "}
+              <span className="text-red">{parseFloat(stopLoss).toFixed(0)}</span>
+            </span>
+          )}
+        </span>
+        <svg width="8" height="5" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+          className={`transition-transform ${showTpSl ? 'rotate-180' : ''}`}>
+          <path d="M1 1l4 4 4-4" />
+        </svg>
+      </button>
+      {showTpSl && (
+        <div className="grid grid-cols-2 gap-2">
+          <div className="min-w-0">
+            <label className="text-xs text-text-dim mb-0.5 block">Take Profit</label>
+            <div className="flex items-center bg-bg-inset rounded-md border border-border px-2 py-1.5">
+              <span className="text-green text-sm mr-1.5">↑</span>
+              <input
+                type="number"
+                step="any"
+                value={takeProfit}
+                onChange={(e) => setTakeProfit(e.target.value)}
+                placeholder="Optional"
+                className="input-inline flex-1 min-w-0 text-base font-mono text-text-primary"
+              />
+            </div>
+          </div>
+          <div className="min-w-0">
+            <label className="text-xs text-text-dim mb-0.5 block">Stop Loss</label>
+            <div className="flex items-center bg-bg-inset rounded-md border border-border px-2 py-1.5">
+              <span className="text-red text-sm mr-1.5">↓</span>
+              <input
+                type="number"
+                step="any"
+                value={stopLoss}
+                onChange={(e) => setStopLoss(e.target.value)}
+                placeholder="Optional"
+                className="input-inline flex-1 min-w-0 text-base font-mono text-text-primary"
+              />
+            </div>
           </div>
         </div>
-        <div className="min-w-0">
-          <label className="text-sm text-text-muted mb-0.5 flex items-center gap-1.5">Stop Loss <InfoTip text="Auto-sell price below your entry. Limits downside risk — triggers when price drops to this level." /></label>
-          <div className="flex items-center bg-bg-inset rounded-md border border-border px-2 py-1.5">
-            <span className="text-red text-sm mr-1.5">↓</span>
-            <input
-              type="number"
-              step="any"
-              value={stopLoss}
-              onChange={(e) => setStopLoss(e.target.value)}
-              required
-              className="input-inline flex-1 min-w-0 text-base font-mono text-text-primary"
-            />
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Yield vault picker */}
       {vaults.length > 0 && (
@@ -389,7 +413,7 @@ export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetP
           <InfoRow label="APY" value={`${vaultApy.toFixed(2)}%`} accent />
           <InfoRow label="Daily yield" value={`$${estDailyYield.toFixed(4)}`} accent />
           <InfoRow label="Distance" value={`${Math.abs(targetDist).toFixed(2)}% from spot`} />
-          <InfoRow label="Order type" value="OTOCO" />
+          <InfoRow label="Order type" value={takeProfit || stopLoss ? "OTOCO (with TP/SL)" : "Limit"} />
           <InfoRow label="Flow" value={activeVault ? `${activeVault.uiSymbol} → jl${activeVault.uiSymbol} → ${token.symbol}` : "Direct"} />
           <InfoRow label="Exit" value="1 tx via Jupiter routing" />
           <InfoRow label="Min. trade" value="$10" />

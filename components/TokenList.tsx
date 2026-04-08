@@ -87,7 +87,7 @@ export default function TokenList({ onSelect, prices, onPricesUpdate }: Props) {
   const displayTokens: TokenListItem[] = query.trim() ? tokens : POPULAR_TOKENS;
 
   return (
-    <div className="glass-card p-5 space-y-4">
+    <div className="glass-card p-3 md:p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-text-primary">Select a token to Coil</h2>
         <span className="text-sm text-text-dim">Earn yield while waiting for your price</span>

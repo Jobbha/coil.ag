@@ -96,7 +96,7 @@ export default function ProfileTab() {
 
       {/* Balances + Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="glass-card p-5">
+        <div className="glass-card p-3 md:p-5">
           <p className="text-sm text-text-dim uppercase tracking-wider mb-1">SOL Balance</p>
           <p className="text-2xl font-bold font-mono text-text-primary">
             {balance !== null ? balance.toFixed(4) : "—"}
@@ -106,13 +106,13 @@ export default function ProfileTab() {
           </p>
         </div>
 
-        <div className="glass-card p-5">
+        <div className="glass-card p-3 md:p-5">
           <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Active Coil Orders</p>
           <p className="text-2xl font-bold font-mono text-mint">—</p>
           <p className="text-sm text-text-muted mt-1">Check the Dashboard tab</p>
         </div>
 
-        <div className="glass-card p-5">
+        <div className="glass-card p-3 md:p-5">
           <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Total Yield Earned</p>
           <p className="text-2xl font-bold font-mono text-mint">—</p>
           <p className="text-sm text-text-muted mt-1">Across all orders</p>
@@ -120,7 +120,7 @@ export default function ProfileTab() {
       </div>
 
       {/* Recent activity */}
-      <div className="glass-card p-5">
+      <div className="glass-card p-3 md:p-5">
         <h3 className="text-sm font-semibold text-text-primary mb-4">Wallet Activity</h3>
         <div className="space-y-3">
           <ActivityRow label="Connected wallet" time="Just now" icon="🔗" />

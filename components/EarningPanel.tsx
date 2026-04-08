@@ -99,7 +99,7 @@ export default function EarningPanel({ orders }: Props) {
 
 function OrderRow({ order }: { order: CoilOrder }) {
   const cfg = STATE_LABEL[order.state];
-  const capitalUsd = parseInt(order.capitalAmount) / 1e6;
+  const capitalUsd = parseInt(order.capitalAmount, 10) / 1e6;
 
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-bg-inset border border-border-subtle hover:border-border transition-colors">

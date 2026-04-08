@@ -5,6 +5,7 @@ import {
   lendDeposit,
   lendWithdraw,
 } from "@/lib/jupiter";
+import { isValidAddress, sanitizeError } from "@/lib/validation";
 
 // Cache lend tokens (changes rarely)
 let tokensCache: { data: unknown; expiry: number } | null = null;
@@ -28,6 +29,9 @@ export async function GET(req: NextRequest) {
       if (!wallet) {
         return NextResponse.json({ error: "wallet required" }, { status: 400 });
       }
+      if (!isValidAddress(wallet)) {
+        return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
+      }
       const positions = await lendPositions(wallet);
       return NextResponse.json(positions);
     }
@@ -40,7 +44,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(tokensCache.data);
     }
     const msg = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 502 });
+    return NextResponse.json({ error: sanitizeError(msg) }, { status: 502 });
   }
 }
 
@@ -55,6 +59,13 @@ export async function POST(req: NextRequest) {
         { error: "asset, amount, and signer required" },
         { status: 400 },
       );
+    }
+
+    if (!isValidAddress(signer)) {
+      return NextResponse.json({ error: "Invalid signer address" }, { status: 400 });
+    }
+    if (!isValidAddress(asset)) {
+      return NextResponse.json({ error: "Invalid asset address" }, { status: 400 });
     }
 
     if (action === "deposit") {
@@ -72,6 +83,6 @@ export async function POST(req: NextRequest) {
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 502 });
+    return NextResponse.json({ error: sanitizeError(msg) }, { status: 502 });
   }
 }

@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { headers as jupiterHeaders } from "@/lib/jupiter";
+import { isValidAddress, sanitizeError } from "@/lib/validation";
 
 const BASE = "https://api.jup.ag";
-
-function headers(): HeadersInit {
-  const h: HeadersInit = { "Content-Type": "application/json" };
-  const key = process.env.JUPITER_API_KEY;
-  if (key) h["x-api-key"] = key;
-  return h;
-}
 
 /**
  * GET /api/swap-quote?inputMint=...&outputMint=...&amount=...
  *
  * Returns a swap quote from Jupiter Swap V2.
- * Supports jlToken → any token routing (Jupiter handles redemption internally).
+ * Supports jlToken -> any token routing (Jupiter handles redemption internally).
  */
 export async function GET(req: NextRequest) {
   const inputMint = req.nextUrl.searchParams.get("inputMint");
@@ -28,14 +23,24 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  if (!isValidAddress(inputMint)) {
+    return NextResponse.json({ error: "Invalid inputMint address" }, { status: 400 });
+  }
+  if (!isValidAddress(outputMint)) {
+    return NextResponse.json({ error: "Invalid outputMint address" }, { status: 400 });
+  }
+  if (!/^\d+$/.test(amount) || amount === "0") {
+    return NextResponse.json({ error: "amount must be a positive integer string" }, { status: 400 });
+  }
+
   try {
     const qs = new URLSearchParams({ inputMint, outputMint, amount, slippageBps });
-    const res = await fetch(`${BASE}/swap/v2/order?${qs}`, { headers: headers() });
+    const res = await fetch(`${BASE}/swap/v2/order?${qs}`, { headers: jupiterHeaders() });
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       return NextResponse.json(
-        { error: `Jupiter Swap ${res.status}: ${body}` },
+        { error: sanitizeError(`Jupiter Swap ${res.status}: ${body}`) },
         { status: res.status },
       );
     }
@@ -56,6 +61,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 502 });
+    return NextResponse.json({ error: sanitizeError(msg) }, { status: 502 });
   }
 }

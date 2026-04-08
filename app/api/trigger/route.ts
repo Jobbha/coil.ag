@@ -7,6 +7,10 @@ import {
   triggerCancelOrder,
   triggerOrderHistory,
 } from "@/lib/jupiter";
+import { isValidAddress, sanitizeError } from "@/lib/validation";
+
+// TODO: Add JWT validation middleware for production to verify tokens server-side
+// before forwarding requests to the Jupiter Trigger API.
 
 /**
  * POST /api/trigger
@@ -30,6 +34,9 @@ export async function POST(req: NextRequest) {
         if (!params.wallet) {
           return NextResponse.json({ error: "wallet required" }, { status: 400 });
         }
+        if (!isValidAddress(params.wallet)) {
+          return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
+        }
         const res = await triggerChallenge(params.wallet);
         return NextResponse.json(res);
       }
@@ -52,6 +59,9 @@ export async function POST(req: NextRequest) {
             { status: 400 },
           );
         }
+        if (!isValidAddress(params.inputMint)) {
+          return NextResponse.json({ error: "Invalid inputMint address" }, { status: 400 });
+        }
         const res = await triggerDepositCraft(jwt, params.inputMint, params.amount);
         return NextResponse.json(res);
       }
@@ -62,6 +72,12 @@ export async function POST(req: NextRequest) {
             { error: "jwt and order params required" },
             { status: 400 },
           );
+        }
+        if (!isValidAddress(params.inputMint)) {
+          return NextResponse.json({ error: "Invalid inputMint address" }, { status: 400 });
+        }
+        if (!isValidAddress(params.outputMint)) {
+          return NextResponse.json({ error: "Invalid outputMint address" }, { status: 400 });
         }
         const res = await triggerCreateOrder(jwt, params);
         return NextResponse.json(res);
@@ -94,6 +110,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 502 });
+    return NextResponse.json({ error: sanitizeError(msg) }, { status: 502 });
   }
 }

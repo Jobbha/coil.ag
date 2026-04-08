@@ -10,12 +10,12 @@ interface Props {
 export default function TickerStrip({ onTokenClick, prices }: Props) {
 
   return (
-    <div className="flex items-center gap-1 px-6 py-2.5 border-b border-border-subtle overflow-x-auto">
+    <div className="flex items-center gap-0.5 md:gap-1 px-3 py-1.5 md:px-6 md:py-2.5 border-b border-border-subtle overflow-x-auto scrollbar-hide">
       <span className="flex items-center gap-1.5 text-sm font-medium text-mint shrink-0 mr-2">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
           <path d="M6 1l1.5 3.5L11 6l-3.5 1.5L6 11 4.5 7.5 1 6l3.5-1.5z" />
         </svg>
-        Coil Ready
+        <span className="hidden md:inline">Coil Ready</span>
       </span>
       {POPULAR_TOKENS.slice(0, 8).map((token) => {
         const p = prices[token.mint];
@@ -23,7 +23,7 @@ export default function TickerStrip({ onTokenClick, prices }: Props) {
           <button
             key={token.mint}
             onClick={() => onTokenClick({ ...token, usdPrice: p?.usdPrice, priceChange24h: p?.priceChange24h })}
-            className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-bg-card-hover transition-colors shrink-0 group"
+            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-0.5 md:py-1 rounded-lg hover:bg-bg-card-hover transition-colors shrink-0 group"
           >
             <div className="w-5 h-5 rounded-full overflow-hidden bg-bg-card shrink-0">
               {token.icon ? (
@@ -35,16 +35,16 @@ export default function TickerStrip({ onTokenClick, prices }: Props) {
                 </div>
               )}
             </div>
-            <span className="text-sm font-medium text-text-primary group-hover:text-mint transition-colors">
+            <span className="text-xs md:text-sm font-medium text-text-primary group-hover:text-mint transition-colors">
               ${token.symbol}
             </span>
             {p ? (
               <>
-                <span className="text-base font-mono text-text-secondary">
+                <span className="text-xs md:text-base font-mono text-text-secondary">
                   ${formatCompact(p.usdPrice)}
                 </span>
                 <span
-                  className={`text-base font-mono ${
+                  className={`text-xs md:text-base font-mono ${
                     p.priceChange24h >= 0 ? "text-green" : "text-red"
                   }`}
                 >

@@ -3,7 +3,7 @@
 
 const BASE = "https://api.jup.ag";
 
-function headers(): HeadersInit {
+export function headers(): HeadersInit {
   const h: HeadersInit = { "Content-Type": "application/json" };
   const key = process.env.JUPITER_API_KEY;
   if (key) h["x-api-key"] = key;
@@ -29,7 +29,9 @@ export class JupiterError extends Error {
     public body: string,
     public endpoint: string,
   ) {
-    super(`Jupiter ${endpoint} responded ${status}: ${body}`);
+    // Truncate body to 100 chars to avoid leaking sensitive data
+    const safeBody = body.length > 100 ? body.substring(0, 100) + "..." : body;
+    super(`Jupiter ${endpoint} responded ${status}: ${safeBody}`);
     this.name = "JupiterError";
   }
 }

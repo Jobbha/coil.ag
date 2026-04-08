@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isValidAddress, sanitizeError, setWithLimit } from "@/lib/validation";
 
 // GeckoTerminal free API — real on-chain OHLCV with volume
 const GT_BASE = "https://api.geckoterminal.com/api/v2";
@@ -8,8 +9,10 @@ const poolCache = new Map<string, { pool: string; expiry: number }>();
 const candleCache = new Map<string, { data: unknown; expiry: number }>();
 const POOL_TTL = 300_000; // 5 min
 const CANDLE_TTL = 30_000; // 30 sec
+const MAX_POOL_CACHE = 50;
+const MAX_CANDLE_CACHE = 200;
 
-// Timeframe → GeckoTerminal params
+// Timeframe -> GeckoTerminal params
 const TF_CONFIG: Record<string, { timeframe: string; aggregate: number; limit: number }> = {
   "1m":  { timeframe: "minute", aggregate: 1,  limit: 500 },
   "5m":  { timeframe: "minute", aggregate: 5,  limit: 500 },
@@ -18,6 +21,8 @@ const TF_CONFIG: Record<string, { timeframe: string; aggregate: number; limit: n
   "4h":  { timeframe: "hour",   aggregate: 4,  limit: 500 },
   "1d":  { timeframe: "day",    aggregate: 1,  limit: 365 },
 };
+
+const ALLOWED_TF = new Set(Object.keys(TF_CONFIG));
 
 /** Find the highest-volume USDC pool for a given token on Solana */
 async function findPool(mint: string): Promise<string | null> {
@@ -35,7 +40,6 @@ async function findPool(mint: string): Promise<string | null> {
     const pools = (json.data ?? []) as any[];
 
     // Prefer pools paired with USDC or SOL stables
-    const usdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
     const solMint = "So11111111111111111111111111111111111111112";
 
     // Find best USDC pool, fallback to SOL pool, fallback to highest volume
@@ -52,7 +56,7 @@ async function findPool(mint: string): Promise<string | null> {
     const pool = stablePool ?? solPool ?? pools[0];
     const addr = pool?.attributes?.address;
     if (addr) {
-      poolCache.set(mint, { pool: addr, expiry: Date.now() + POOL_TTL });
+      setWithLimit(poolCache, mint, { pool: addr, expiry: Date.now() + POOL_TTL }, MAX_POOL_CACHE);
     }
     return addr ?? null;
   } catch {
@@ -67,8 +71,17 @@ export async function GET(req: NextRequest) {
   if (!mint) {
     return NextResponse.json({ error: "mint required" }, { status: 400 });
   }
+  if (!isValidAddress(mint)) {
+    return NextResponse.json({ error: "Invalid mint address" }, { status: 400 });
+  }
+  if (!ALLOWED_TF.has(tf)) {
+    return NextResponse.json(
+      { error: `Invalid timeframe. Allowed: ${[...ALLOWED_TF].join(", ")}` },
+      { status: 400 },
+    );
+  }
 
-  const config = TF_CONFIG[tf] ?? TF_CONFIG["15m"];
+  const config = TF_CONFIG[tf];
   const cacheKey = `${mint}:${tf}`;
 
   // Check candle cache
@@ -104,11 +117,11 @@ export async function GET(req: NextRequest) {
         volume: v,
       }));
 
-    candleCache.set(cacheKey, { data: candles, expiry: Date.now() + CANDLE_TTL });
+    setWithLimit(candleCache, cacheKey, { data: candles, expiry: Date.now() + CANDLE_TTL }, MAX_CANDLE_CACHE);
     return NextResponse.json(candles);
   } catch (e) {
     if (cached) return NextResponse.json(cached.data);
     const msg = e instanceof Error ? e.message : "Unknown error";
-    return NextResponse.json({ error: msg }, { status: 502 });
+    return NextResponse.json({ error: sanitizeError(msg) }, { status: 502 });
   }
 }

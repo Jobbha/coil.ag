@@ -20,8 +20,8 @@ export default function PredictPage() {
   const [side, setSide] = useState<"yes" | "no">("yes");
 
   useEffect(() => {
-    // Fetch markets from Jupiter Prediction API
-    fetch("https://api.jup.ag/prediction/v1/events?limit=12")
+    // Fetch markets via server-side proxy
+    fetch("/api/predict")
       .then((r) => r.json())
       .then((data) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,7 +58,7 @@ export default function PredictPage() {
   return (
     <div className="animate-fadeIn space-y-4">
       {/* Header */}
-      <div className="glass-card p-5">
+      <div className="glass-card p-3 md:p-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-8 rounded-lg bg-yellow/10 border border-yellow/20 flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-yellow">

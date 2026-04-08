@@ -32,7 +32,7 @@ export default function PerpsPage({ prices, onPricesUpdate }: Props) {
   if (!token) {
     return (
       <div className="animate-fadeIn space-y-4">
-        <div className="glass-card p-5">
+        <div className="glass-card p-3 md:p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-lg bg-mint/10 border border-mint/20 flex items-center justify-center">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-mint">

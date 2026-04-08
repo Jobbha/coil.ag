@@ -96,7 +96,7 @@ export default function PositionsPanel({ orders, onCancelOrder }: Props) {
                     <span className="text-text-dim mx-0.5">/</span>
                     <span className="text-red">${o.stopLossPrice.toFixed(2)}</span>
                   </span>
-                  <span className="hidden md:inline w-[8%] font-mono text-text-primary">${(parseInt(o.capitalAmount) / 1e6).toFixed(0)}</span>
+                  <span className="hidden md:inline w-[8%] font-mono text-text-primary">${(parseInt(o.capitalAmount, 10) / 1e6).toFixed(0)}</span>
                   <span className="w-[20%] md:w-[10%] font-mono text-mint">+${o.yieldEarned.toFixed(4)}</span>
                   <span className="w-[12%] md:w-[8%] text-right text-text-dim">{formatAge(o.createdAt)}</span>
                   <span className="w-[8%] md:w-[6%] text-right text-text-dim">
@@ -130,7 +130,7 @@ export default function PositionsPanel({ orders, onCancelOrder }: Props) {
 }
 
 function OrderDetail({ order, onCancel }: { order: CoilOrder; onCancel?: (id: string) => void }) {
-  const capitalUsd = parseInt(order.capitalAmount) / 1e6;
+  const capitalUsd = parseInt(order.capitalAmount, 10) / 1e6;
   const elapsed = (Date.now() - order.createdAt) / 1000;
   const elapsedHrs = elapsed / 3600;
   const yieldPerHour = elapsedHrs > 0 ? order.yieldEarned / elapsedHrs : 0;
