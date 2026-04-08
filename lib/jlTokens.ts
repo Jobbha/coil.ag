@@ -71,34 +71,3 @@ export function getJlToken(assetMint: string) {
 export function getJlTokenByMint(jlMint: string) {
   return Object.values(JL_TOKENS).find((t) => t.jlMint === jlMint);
 }
-
-/**
- * The Coil flow using jlTokens:
- *
- * 1. DEPOSIT: User deposits USDC → mint jlUSDC via Jupiter Lend
- *    - POST /lend/v1/earn/deposit { asset: USDC_MINT, amount, signer }
- *    - User now holds jlUSDC which auto-appreciates (yield accrues in token price)
- *
- * 2. EARN: jlUSDC sits in wallet, value increases as Lend vault earns
- *    - No action needed — yield is embedded in jlToken exchange rate
- *    - convertToAssets rate increases over time
- *
- * 3. EXECUTE: When price target is hit, swap jlUSDC → target token in ONE tx
- *    - Jupiter Swap routing handles jlToken redemption internally
- *    - GET /swap/v2/order?inputMint=jlUSDC_MINT&outputMint=SOL_MINT&amount=...
- *    - This routes: jlUSDC → redeem → USDC → swap → SOL (all in one tx!)
- *
- * 4. OTOCO: For TP/SL, after the swap fills, place Trigger orders on the output
- *    - POST /trigger/v2/orders/price (with TP and SL prices)
- *
- * Benefits over old flow:
- * - Earn yield until the EXACT moment of execution (no withdrawal delay)
- * - Single transaction for exit (vs 3 separate txs)
- * - Accumulated yield is captured in the swap (jlUSDC is worth more than deposited USDC)
- */
-export type CoilJlFlow = {
-  step: "mint" | "earning" | "executing" | "placing_tp_sl" | "done";
-  jlMint: string;
-  jlAmount: string; // jlToken amount held
-  estimatedYield: number; // USD yield accrued based on exchange rate change
-};
