@@ -23,9 +23,34 @@ const STATE_STYLE: Record<CoilState, { label: string; color: string; bg: string 
   ERROR: { label: "Error", color: "text-red", bg: "bg-red/10" },
 };
 
+interface LendPosition {
+  mint: string;
+  symbol?: string;
+  amount: string;
+  value_usd: number;
+  apy: number;
+}
+
 export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }: Props) {
+  const { publicKey } = useWallet();
   const [tab, setTab] = useState<"active" | "history">("active");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [lendPositions, setLendPositions] = useState<LendPosition[]>([]);
+
+  // Fetch real on-chain Lend positions
+  useEffect(() => {
+    if (!publicKey) return;
+    const addr = publicKey.toBase58();
+    function fetchPositions() {
+      fetch(`/api/lend?action=positions&wallet=${addr}`)
+        .then((r) => r.json())
+        .then((data) => { if (Array.isArray(data)) setLendPositions(data); })
+        .catch(() => {});
+    }
+    fetchPositions();
+    const iv = setInterval(fetchPositions, 30_000);
+    return () => clearInterval(iv);
+  }, [publicKey]);
 
   const active = orders.filter((o) =>
     ["LENDING", "APPROACHING", "WITHDRAWING", "PLACED"].includes(o.state),
@@ -123,10 +148,27 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
         </div>
       )}
 
-      {/* Column headers (sticky feel) */}
-      {displayOrders.length > 0 && (
-        <div className="absolute top-[41px] left-0 right-0 flex items-center px-4 py-1.5 text-sm text-text-dim uppercase tracking-wider border-b border-border-subtle bg-bg-card" style={{ display: 'none' }}>
-          {/* Hidden — headers are implicit from data alignment */}
+      {/* On-chain Lend positions */}
+      {lendPositions.length > 0 && (
+        <div className="border-t border-border-subtle">
+          <div className="px-4 py-2 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
+            <span className="text-xs text-text-dim uppercase tracking-wider font-medium">On-Chain Lend Positions</span>
+          </div>
+          {lendPositions.map((pos) => (
+            <div key={pos.mint} className="flex items-center gap-3 px-4 py-2.5 border-t border-border-subtle text-sm">
+              <span className="w-[20%] font-mono text-blue truncate">{pos.mint.slice(0, 6)}...{pos.mint.slice(-4)}</span>
+              <span className="w-[20%]">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
+                  <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                  Earning
+                </span>
+              </span>
+              <span className="w-[20%] font-mono text-text-primary">{parseFloat(pos.amount).toFixed(4)}</span>
+              <span className="w-[15%] font-mono text-text-secondary">${pos.value_usd.toFixed(2)}</span>
+              <span className="w-[15%] font-mono text-mint">{pos.apy?.toFixed(2) ?? "—"}% APY</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import PrivyAuthProvider from "@/components/PrivyAuthProvider";
 import WalletProvider from "@/components/WalletProvider";
+import WalletAutoConnect from "@/components/WalletAutoConnect";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({
 
         <PrivyAuthProvider>
           <WalletProvider>
+            <WalletAutoConnect />
             <div className="relative z-10 min-h-full flex flex-col">{children}</div>
           </WalletProvider>
         </PrivyAuthProvider>
