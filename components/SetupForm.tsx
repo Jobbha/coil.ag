@@ -224,7 +224,7 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
       {/* Capital input */}
       <div className="bg-bg-inset rounded-lg p-3.5 border border-border">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-text-muted flex items-center gap-1.5">You deposit <InfoTip text="USDC amount to deposit. This capital earns yield in Jupiter Lend while waiting for your limit price." /></span>
+          <span className="text-sm text-text-muted flex items-center gap-1.5">You deposit <InfoTip text="Amount to deposit into Jupiter Lend. Earns yield while waiting for your limit price." /></span>
           <span className="text-sm text-text-dim">~${estDailyYield.toFixed(4)}/day</span>
         </div>
         <div className="flex items-center gap-2">
@@ -238,8 +238,13 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
             className="input-inline flex-1 min-w-0 text-base font-mono font-semibold text-text-primary"
           />
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-bg-card border border-border shrink-0">
-            <div className="w-3.5 h-3.5 rounded-full bg-blue flex items-center justify-center text-sm font-bold text-white">$</div>
-            <span className="text-sm font-medium">USDC</span>
+            {activeVault?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={activeVault.logoUrl} alt={activeVault.uiSymbol} className="w-3.5 h-3.5 rounded-full" />
+            ) : (
+              <div className="w-3.5 h-3.5 rounded-full bg-blue flex items-center justify-center text-sm font-bold text-white">$</div>
+            )}
+            <span className="text-sm font-medium">{activeVault?.uiSymbol ?? "USDC"}</span>
           </div>
         </div>
       </div>
