@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { VersionedTransaction } from "@solana/web3.js";
 import TopNav from "@/components/TopNav";
 import TickerStrip from "@/components/TickerStrip";
 import Hero from "@/components/Hero";
@@ -21,7 +23,30 @@ import { POPULAR_TOKENS, type TokenListItem } from "@/lib/tokens";
 type PriceMap = Record<string, { usdPrice: number; priceChange24h: number }>;
 
 export default function DashboardPage() {
-  const { orders, addOrder, updateOrder } = useCoilEngine([]);
+  const { publicKey, signTransaction } = useWallet();
+  const { connection } = useConnection();
+
+  // Build a signAndSend function for auto-execution
+  const signAndSend = useCallback(
+    async (txBase64: string): Promise<string> => {
+      if (!signTransaction) throw new Error("Wallet not connected");
+      const txBytes = Buffer.from(txBase64, "base64");
+      const tx = VersionedTransaction.deserialize(txBytes);
+      const signed = await signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+        maxRetries: 3,
+      });
+      await connection.confirmTransaction(sig, "confirmed");
+      return sig;
+    },
+    [signTransaction, connection],
+  );
+
+  const { orders, addOrder, updateOrder } = useCoilEngine([], {
+    walletAddress: publicKey?.toBase58() ?? null,
+    signAndSend: signTransaction ? signAndSend : undefined,
+  });
   const [selectedToken, setSelectedToken] = useState<TokenListItem | null>(null);
   const [activeTab, setActiveTab] = useState("Spot");
   const tokenListRef = useRef<HTMLDivElement>(null);

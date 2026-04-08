@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CoilOrder } from "./coilEngine";
 import { evaluateTransition, applyTransition, updateSpot } from "./coilEngine";
+import { getJlToken } from "./jlTokens";
 
 const POLL_INTERVAL_MS = 10_000;
 const STORAGE_KEY = "coil-orders";
@@ -24,11 +25,61 @@ function saveOrders(orders: CoilOrder[]) {
   } catch { /* quota exceeded etc */ }
 }
 
-export function useCoilEngine(initialOrders: CoilOrder[]) {
+/** Auto-execute: swap jlToken → target token when price hits threshold */
+async function autoExecuteSwap(
+  order: CoilOrder,
+  walletAddress: string,
+  signAndSend: (txBase64: string) => Promise<string>,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const jlToken = order.yieldMint ? { jlMint: order.yieldMint } : getJlToken(order.inputMint);
+    const inputMint = jlToken?.jlMint ?? order.inputMint;
+
+    const qs = new URLSearchParams({
+      inputMint,
+      outputMint: order.outputMint,
+      amount: order.capitalAmount,
+      taker: walletAddress,
+      slippageBps: "100",
+    });
+
+    const res = await fetch(`/api/swap-quote?${qs}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || `Swap quote failed (${res.status})` };
+    }
+
+    const data = await res.json();
+    if (!data.swapTransaction) {
+      return { success: false, error: "No swap transaction returned" };
+    }
+
+    await signAndSend(data.swapTransaction);
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Swap failed";
+    if (msg.includes("User rejected") || msg.includes("cancelled")) {
+      return { success: false, error: "User rejected" };
+    }
+    return { success: false, error: msg };
+  }
+}
+
+interface EngineOptions {
+  walletAddress?: string | null;
+  signAndSend?: (txBase64: string) => Promise<string>;
+}
+
+export function useCoilEngine(initialOrders: CoilOrder[], options?: EngineOptions) {
   const [orders, setOrders] = useState<CoilOrder[]>(initialOrders);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const lastFetchRef = useRef<number>(0);
   const hydrated = useRef(false);
+  const executingRef = useRef<Set<string>>(new Set());
+
+  // Store options in ref so effect doesn't re-run on every render
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   // Load from localStorage after mount (avoids hydration mismatch)
   useEffect(() => {
@@ -59,7 +110,7 @@ export function useCoilEngine(initialOrders: CoilOrder[]) {
     );
   }, []);
 
-  // Price polling + state machine loop
+  // Price polling + state machine loop + auto-execution
   useEffect(() => {
     async function tick() {
       const now = Date.now();
@@ -99,6 +150,34 @@ export function useCoilEngine(initialOrders: CoilOrder[]) {
               const transition = evaluateTransition(updated);
               if (transition) {
                 updated = applyTransition(updated, transition);
+
+                // Auto-execute when transitioning to APPROACHING
+                if (
+                  transition.to === "APPROACHING" &&
+                  optionsRef.current?.walletAddress &&
+                  optionsRef.current?.signAndSend &&
+                  !executingRef.current.has(order.id)
+                ) {
+                  executingRef.current.add(order.id);
+                  const wallet = optionsRef.current.walletAddress;
+                  const signAndSend = optionsRef.current.signAndSend;
+
+                  autoExecuteSwap(updated, wallet, signAndSend).then((result) => {
+                    executingRef.current.delete(order.id);
+                    if (result.success) {
+                      setOrders((cur) =>
+                        cur.map((o) =>
+                          o.id === order.id
+                            ? { ...o, state: "FILLED", updatedAt: Date.now() }
+                            : o,
+                        ),
+                      );
+                    } else if (result.error !== "User rejected") {
+                      // Stay in APPROACHING, will retry on next tick
+                      console.warn(`Auto-execute failed for ${order.id}: ${result.error}`);
+                    }
+                  });
+                }
               }
 
               return updated;
