@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
 import TopNav from "@/components/TopNav";
 import TickerStrip from "@/components/TickerStrip";
 import Hero from "@/components/Hero";
@@ -22,8 +21,7 @@ import { POPULAR_TOKENS, type TokenListItem } from "@/lib/tokens";
 type PriceMap = Record<string, { usdPrice: number; priceChange24h: number }>;
 
 export default function DashboardPage() {
-  const { connected } = useWallet();
-  const { orders, addOrder } = useCoilEngine([]);
+  const { orders, addOrder, updateOrder } = useCoilEngine([]);
   const [selectedToken, setSelectedToken] = useState<TokenListItem | null>(null);
   const [activeTab, setActiveTab] = useState("Spot");
   const tokenListRef = useRef<HTMLDivElement>(null);
@@ -52,10 +50,6 @@ export default function DashboardPage() {
     const interval = setInterval(fetchPrices, 30_000);
     return () => clearInterval(interval);
   }, [fetchPrices]);
-
-  const hasActiveOrders = orders.some((o) =>
-    ["LENDING", "APPROACHING", "WITHDRAWING", "PLACED"].includes(o.state),
-  );
 
   function handleTokenSelect(token: TokenListItem) {
     setSelectedToken(token);
@@ -96,13 +90,12 @@ export default function DashboardPage() {
                           token={selectedToken}
                           onSubmit={handleOrderSubmit}
                           onBack={() => setSelectedToken(null)}
-                          disabled={!connected}
                           onTargetPriceChange={setLiveTargetPrice}
                         />
                       </div>
                     </div>
                   </div>
-                  <PositionsPanel orders={orders} />
+                  <PositionsPanel orders={orders} onUpdateOrder={updateOrder} />
                 </div>
               ) : (
                 <div className="animate-fadeIn space-y-5" key="tokenlist">
@@ -113,7 +106,7 @@ export default function DashboardPage() {
                   {orders.length > 0 && (
                     <>
                       <Portfolio orders={orders} />
-                      <PositionsPanel orders={orders} />
+                      <PositionsPanel orders={orders} onUpdateOrder={updateOrder} />
                     </>
                   )}
                 </div>
@@ -142,7 +135,7 @@ export default function DashboardPage() {
           {activeTab === "Orders" && (
             <div className="animate-fadeIn space-y-4">
               <Portfolio orders={orders} />
-              <PositionsPanel orders={orders} />
+              <PositionsPanel orders={orders} onUpdateOrder={updateOrder} />
             </div>
           )}
 

@@ -53,6 +53,12 @@ export function useCoilEngine(initialOrders: CoilOrder[]) {
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
   }, []);
 
+  const updateOrder = useCallback((orderId: string, updates: Partial<CoilOrder>) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, ...updates, updatedAt: Date.now() } : o)),
+    );
+  }, []);
+
   // Price polling + state machine loop
   useEffect(() => {
     async function tick() {
@@ -115,7 +121,7 @@ export function useCoilEngine(initialOrders: CoilOrder[]) {
     ["LENDING", "APPROACHING", "WITHDRAWING", "PLACED"].includes(o.state),
   );
 
-  return { orders, activeOrder, addOrder, removeOrder };
+  return { orders, activeOrder, addOrder, removeOrder, updateOrder };
 }
 
 async function fetchPrices(mints: string[]): Promise<Record<string, number>> {

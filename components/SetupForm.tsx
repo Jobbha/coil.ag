@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { VersionedTransaction } from "@solana/web3.js";
 import type { CoilOrder } from "@/lib/coilEngine";
 import { createOrder, KNOWN_MINTS } from "@/lib/coilEngine";
+import { getJlToken } from "@/lib/jlTokens";
 import type { TokenListItem } from "@/lib/tokens";
 
 interface VaultOption {
@@ -26,7 +30,11 @@ interface Props {
   onTargetPriceChange?: (price: number | null) => void;
 }
 
-export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetPriceChange }: Props) {
+export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange }: Props) {
+  const { publicKey, signTransaction, connected } = useWallet();
+  const { connection } = useConnection();
+  const { setVisible } = useWalletModal();
+
   const spotPrice = token.usdPrice ?? 0;
   const [targetPrice, setTargetPrice] = useState(() =>
     spotPrice ? (spotPrice * 0.95).toFixed(4) : "",
@@ -42,6 +50,10 @@ export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetP
   const [showDetails, setShowDetails] = useState(false);
   const [showTpSl, setShowTpSl] = useState(false);
   const [expandedVault, setExpandedVault] = useState("");
+
+  // Tx state
+  const [submitting, setSubmitting] = useState(false);
+  const [txStatus, setTxStatus] = useState("");
 
   // Yield vault selection
   const [vaults, setVaults] = useState<VaultOption[]>([]);
@@ -88,22 +100,95 @@ export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetP
   const estDailyYield = (capitalNum * (vaultApy / 100)) / 365;
   const targetDist = spotPrice && targetPrice ? ((spotPrice - parseFloat(targetPrice)) / spotPrice) * 100 : 0;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const order = createOrder({
-      inputMint: activeVault?.assetAddress ?? KNOWN_MINTS.USDC,
-      outputMint: token.mint,
-      targetPrice: parseFloat(targetPrice),
-      takeProfitPrice: parseFloat(takeProfit),
-      stopLossPrice: parseFloat(stopLoss),
-      capitalAmount: (parseFloat(capital) * 1e6).toString(),
-      proximityThreshold: parseFloat(threshold) / 100,
-      yieldMint: activeVault?.assetAddress ?? null,
-      yieldSymbol: activeVault ? `jl${activeVault.uiSymbol}` : null,
-      strategy: "limit",
-    });
-    onSubmit(order);
+
+    // If wallet not connected, open wallet modal
+    if (!connected || !publicKey || !signTransaction) {
+      setVisible(true);
+      return;
+    }
+
+    setSubmitting(true);
+    setTxStatus("Building deposit...");
+
+    try {
+      const assetMint = activeVault?.assetAddress ?? KNOWN_MINTS.USDC;
+      const decimals = activeVault?.decimals ?? 6;
+      const amount = Math.floor(parseFloat(capital) * Math.pow(10, decimals)).toString();
+
+      // 1. Build Lend deposit tx via API
+      const res = await fetch("/api/lend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "deposit",
+          asset: assetMint,
+          amount,
+          signer: publicKey.toBase58(),
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to build deposit transaction");
+      }
+
+      const { transaction: txBase64 } = await res.json();
+
+      // 2. Deserialize and sign
+      setTxStatus("Sign in wallet...");
+      const txBytes = Buffer.from(txBase64, "base64");
+      const tx = VersionedTransaction.deserialize(txBytes);
+      const signed = await signTransaction(tx);
+
+      // 3. Send to chain
+      setTxStatus("Sending...");
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+        maxRetries: 3,
+      });
+
+      // 4. Confirm
+      setTxStatus("Confirming...");
+      await connection.confirmTransaction(sig, "confirmed");
+
+      // 5. Create order with real tx signature
+      const jlToken = getJlToken(assetMint);
+      const order = createOrder({
+        inputMint: assetMint,
+        outputMint: token.mint,
+        targetPrice: parseFloat(targetPrice),
+        takeProfitPrice: parseFloat(takeProfit) || 0,
+        stopLossPrice: parseFloat(stopLoss) || 0,
+        capitalAmount: amount,
+        proximityThreshold: parseFloat(threshold) / 100,
+        yieldMint: jlToken?.jlMint ?? null,
+        yieldSymbol: jlToken?.jlSymbol ?? null,
+        strategy: "limit",
+      });
+      order.lendTxSignature = sig;
+
+      onSubmit(order);
+      setTxStatus("");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Transaction failed";
+      if (msg.includes("User rejected") || msg.includes("cancelled")) {
+        setTxStatus("Cancelled");
+      } else {
+        setTxStatus(msg.length > 80 ? msg.slice(0, 80) + "..." : msg);
+      }
+      setTimeout(() => setTxStatus(""), 5000);
+    } finally {
+      setSubmitting(false);
+    }
   }
+
+  const ctaLabel = submitting
+    ? txStatus
+    : !connected
+      ? "Connect Wallet"
+      : `Start Coil — $${token.symbol}`;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -293,12 +378,8 @@ export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetP
           <div className="flex gap-2 overflow-x-auto pb-1">
             {vaults.map((v) => {
               const apy = parseFloat(v.totalRate) / 100;
-              const supplyApy = parseFloat(v.supplyRate) / 100;
-              const rewardsApy = parseFloat(v.rewardsRate) / 100;
-              const tvl = parseFloat(v.totalAssets) / Math.pow(10, v.decimals) * parseFloat(v.price);
               const isSelected = v.assetAddress === selectedVault;
               const isExpanded = isSelected && expandedVault === v.assetAddress;
-              const dailyYield = capitalNum > 0 ? (capitalNum * (apy / 100)) / 365 : 0;
 
               return (
                 <button
@@ -423,13 +504,23 @@ export default function SetupForm({ token, onSubmit, onBack, disabled, onTargetP
       {/* CTA */}
       <button
         type="submit"
-        disabled={disabled}
-        className="w-full py-2 rounded-lg bg-mint text-bg-base font-semibold text-sm uppercase tracking-wide
-                   hover:bg-mint-dark disabled:opacity-30 disabled:cursor-not-allowed
-                   shadow-[0_0_16px_rgba(73,231,178,0.15)] animate-mintPulse"
+        disabled={submitting}
+        className={`w-full py-2 rounded-lg font-semibold text-sm uppercase tracking-wide transition-all
+                   ${submitting
+                     ? "bg-bg-inset border border-border text-text-muted cursor-wait"
+                     : "bg-mint text-bg-base hover:bg-mint-dark shadow-[0_0_16px_rgba(73,231,178,0.15)] animate-mintPulse"
+                   }
+                   disabled:cursor-wait`}
       >
-        {disabled ? "Connect Wallet" : `Start Coil — $${token.symbol}`}
+        {ctaLabel}
       </button>
+
+      {/* Tx status message */}
+      {txStatus && !submitting && (
+        <p className={`text-center text-sm ${txStatus.includes("Cancelled") ? "text-text-dim" : "text-red"}`}>
+          {txStatus}
+        </p>
+      )}
     </form>
   );
 }
@@ -472,15 +563,6 @@ function formatPrice(price: number): string {
   if (price >= 1) return price.toFixed(2);
   if (price >= 0.01) return price.toFixed(4);
   return price.toFixed(6);
-}
-
-function formatDuration(slices: number, interval: string): string {
-  const hours: Record<string, number> = { "1h": 1, "4h": 4, "1d": 24, "1w": 168 };
-  const totalHours = slices * (hours[interval] ?? 1);
-  if (totalHours < 24) return `${totalHours}h`;
-  const days = totalHours / 24;
-  if (days < 7) return `${days.toFixed(0)}d`;
-  return `${(days / 7).toFixed(1)}w`;
 }
 
 function formatCompact(n: number): string {

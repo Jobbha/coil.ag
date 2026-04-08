@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { VersionedTransaction } from "@solana/web3.js";
 import type { CoilOrder, CoilState } from "@/lib/coilEngine";
+import { getJlToken } from "@/lib/jlTokens";
 
 interface Props {
   orders: CoilOrder[];
   onCancelOrder?: (orderId: string) => void;
+  onUpdateOrder?: (orderId: string, updates: Partial<CoilOrder>) => void;
 }
 
 const STATE_STYLE: Record<CoilState, { label: string; color: string; bg: string }> = {
@@ -19,7 +23,7 @@ const STATE_STYLE: Record<CoilState, { label: string; color: string; bg: string 
   ERROR: { label: "Error", color: "text-red", bg: "bg-red/10" },
 };
 
-export default function PositionsPanel({ orders, onCancelOrder }: Props) {
+export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }: Props) {
   const [tab, setTab] = useState<"active" | "history">("active");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -111,7 +115,7 @@ export default function PositionsPanel({ orders, onCancelOrder }: Props) {
 
                 {/* Expanded detail panel */}
                 <AnimatedCollapse open={isExpanded}>
-                  <OrderDetail order={o} onCancel={onCancelOrder} />
+                  <OrderDetail order={o} onCancel={onCancelOrder} onUpdate={onUpdateOrder} />
                 </AnimatedCollapse>
               </div>
             );
@@ -129,7 +133,12 @@ export default function PositionsPanel({ orders, onCancelOrder }: Props) {
   );
 }
 
-function OrderDetail({ order, onCancel }: { order: CoilOrder; onCancel?: (id: string) => void }) {
+function OrderDetail({ order, onCancel, onUpdate }: { order: CoilOrder; onCancel?: (id: string) => void; onUpdate?: (id: string, updates: Partial<CoilOrder>) => void }) {
+  const { publicKey, signTransaction } = useWallet();
+  const { connection } = useConnection();
+  const [executing, setExecuting] = useState(false);
+  const [execStatus, setExecStatus] = useState("");
+
   const capitalUsd = parseInt(order.capitalAmount, 10) / 1e6;
   const elapsed = (Date.now() - order.createdAt) / 1000;
   const elapsedHrs = elapsed / 3600;
@@ -137,6 +146,67 @@ function OrderDetail({ order, onCancel }: { order: CoilOrder; onCancel?: (id: st
   const projectedDaily = yieldPerHour * 24;
   const projectedMonthly = projectedDaily * 30;
   const effectiveApy = capitalUsd > 0 ? (order.yieldEarned / capitalUsd) * (365 * 24 * 3600 / elapsed) * 100 : 0;
+
+  async function handleExecute() {
+    if (!publicKey || !signTransaction || !onUpdate) return;
+
+    setExecuting(true);
+    setExecStatus("Building swap...");
+
+    try {
+      // Get jlToken mint for swap input
+      const jlToken = order.yieldMint ? { jlMint: order.yieldMint } : getJlToken(order.inputMint);
+      const inputMint = jlToken?.jlMint ?? order.inputMint;
+
+      // Get swap quote + transaction: jlToken → target token
+      const qs = new URLSearchParams({
+        inputMint,
+        outputMint: order.outputMint,
+        amount: order.capitalAmount,
+        taker: publicKey.toBase58(),
+        slippageBps: "100",
+      });
+      const res = await fetch(`/api/swap-quote?${qs}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to get swap quote");
+      }
+
+      const data = await res.json();
+      if (!data.swapTransaction) throw new Error("No swap transaction returned");
+
+      // Sign the swap tx
+      setExecStatus("Sign in wallet...");
+      const txBytes = Buffer.from(data.swapTransaction, "base64");
+      const tx = VersionedTransaction.deserialize(txBytes);
+      const signed = await signTransaction(tx);
+
+      // Send
+      setExecStatus("Sending swap...");
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+        maxRetries: 3,
+      });
+
+      // Confirm
+      setExecStatus("Confirming...");
+      await connection.confirmTransaction(sig, "confirmed");
+
+      // Update order to FILLED
+      onUpdate(order.id, { state: "FILLED" });
+      setExecStatus("Filled!");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Swap failed";
+      if (msg.includes("User rejected") || msg.includes("cancelled")) {
+        setExecStatus("Cancelled");
+      } else {
+        setExecStatus(msg.length > 60 ? msg.slice(0, 60) + "..." : msg);
+      }
+      setTimeout(() => setExecStatus(""), 5000);
+    } finally {
+      setExecuting(false);
+    }
+  }
 
   return (
     <div className="bg-bg-inset border-t border-border-subtle px-4 py-4">
@@ -188,32 +258,62 @@ function OrderDetail({ order, onCancel }: { order: CoilOrder; onCancel?: (id: st
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 mt-4">
-            {["LENDING", "APPROACHING"].includes(order.state) && (
+          <div className="flex flex-col gap-2 mt-4">
+            {order.state === "APPROACHING" && publicKey && (
               <button
-                onClick={() => onCancel?.(order.id)}
-                className="flex-1 py-1.5 rounded-md text-sm font-medium border border-red/20 text-red bg-red/5
-                           hover:bg-red/10 transition-colors"
+                onClick={handleExecute}
+                disabled={executing}
+                className={`w-full py-2 rounded-lg text-sm font-semibold uppercase tracking-wide transition-all ${
+                  executing
+                    ? "bg-bg-inset border border-border text-text-muted cursor-wait"
+                    : "bg-mint text-bg-base hover:bg-mint-dark shadow-[0_0_16px_rgba(73,231,178,0.15)]"
+                }`}
               >
-                Withdraw & Cancel
+                {executing ? execStatus : "Execute Order Now"}
               </button>
             )}
-            {order.state === "PLACED" && (
+            {order.state === "LENDING" && publicKey && (
               <button
-                onClick={() => onCancel?.(order.id)}
-                className="flex-1 py-1.5 rounded-md text-sm font-medium border border-red/20 text-red bg-red/5
-                           hover:bg-red/10 transition-colors"
+                onClick={handleExecute}
+                disabled={executing}
+                className={`w-full py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  executing
+                    ? "bg-bg-inset border border-border text-text-muted cursor-wait"
+                    : "border border-mint/20 text-mint bg-mint/5 hover:bg-mint/10"
+                }`}
               >
-                Cancel Order
+                {executing ? execStatus : "Force Execute Now"}
               </button>
             )}
-            {order.state === "LENDING" && (
-              <button className="flex-1 py-1.5 rounded-md text-sm font-medium border border-mint/20 text-mint bg-mint/5
-                                 hover:bg-mint/10 transition-colors">
-                Force Trigger Now
-              </button>
-            )}
+            <div className="flex gap-2">
+              {["LENDING", "APPROACHING"].includes(order.state) && (
+                <button
+                  onClick={() => onCancel?.(order.id)}
+                  className="flex-1 py-1.5 rounded-md text-sm font-medium border border-red/20 text-red bg-red/5
+                             hover:bg-red/10 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
+              {order.state === "PLACED" && (
+                <button
+                  onClick={() => onCancel?.(order.id)}
+                  className="flex-1 py-1.5 rounded-md text-sm font-medium border border-red/20 text-red bg-red/5
+                             hover:bg-red/10 transition-colors"
+                >
+                  Cancel Order
+                </button>
+              )}
+            </div>
           </div>
+
+          {execStatus && !executing && (
+            <div className={`mt-2 text-sm px-2 py-1.5 rounded-md ${
+              execStatus === "Filled!" ? "text-green bg-green/5 border border-green/10" : "text-red bg-red/5 border border-red/10"
+            }`}>
+              {execStatus}
+            </div>
+          )}
 
           {order.error && (
             <div className="mt-2 text-sm text-red bg-red/5 border border-red/10 rounded-md px-2 py-1.5">

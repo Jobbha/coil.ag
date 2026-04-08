@@ -23,7 +23,12 @@
       "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);const pools=j.data?.slice\\(0,3\\);pools?.forEach\\(p=>console.log\\(p.id, p.attributes?.name, 'vol:', p.attributes?.volume_usd?.h24\\)\\)}\\)\")",
       "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);j.data?.slice\\(0,10\\).forEach\\(p=>console.log\\(p.attributes?.address, p.attributes?.name\\)\\)}\\)\")",
       "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);j.data?.slice\\(0,5\\).forEach\\(p=>console.log\\(p.attributes?.address, p.attributes?.name, 'vol24h:', p.attributes?.volume_usd?.h24\\)\\)}\\)\")",
-      "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);const list=j.data?.attributes?.ohlcv_list;console.log\\('candles:',list?.length\\);if\\(list?.length\\){console.log\\('newest:',list[0]\\);console.log\\('oldest:',list[list.length-1]\\);const spanHrs=Math.round\\(\\(list[0][0]-list[list.length-1][0]\\)/3600\\);console.log\\('span:',spanHrs,'hours'\\)}}\\)\")"
+      "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);const list=j.data?.attributes?.ohlcv_list;console.log\\('candles:',list?.length\\);if\\(list?.length\\){console.log\\('newest:',list[0]\\);console.log\\('oldest:',list[list.length-1]\\);const spanHrs=Math.round\\(\\(list[0][0]-list[list.length-1][0]\\)/3600\\);console.log\\('span:',spanHrs,'hours'\\)}}\\)\")",
+      "Bash(wc -l /c/Users/User/Desktop/Coil/components/*.tsx /c/Users/User/Desktop/Coil/lib/*.ts /c/Users/User/Desktop/Coil/app/*.tsx /c/Users/User/Desktop/Coil/app/api/*/*route.ts)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(git commit --allow-empty -m ':*)"
     ]
   }
 }
