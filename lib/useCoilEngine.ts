@@ -288,11 +288,58 @@ export function useCoilEngine(initialOrders: CoilOrder[], options?: EngineOption
                 };
               }
 
+              // DCA: execute slices on schedule
+              if (
+                updated.strategy === "dca" &&
+                updated.state === "LENDING" &&
+                updated.dcaSliceCount &&
+                updated.dcaSliceInterval &&
+                (updated.dcaSlicesExecuted ?? 0) < updated.dcaSliceCount &&
+                Date.now() - (updated.dcaLastSliceAt ?? 0) >= updated.dcaSliceInterval &&
+                optionsRef.current?.walletAddress &&
+                optionsRef.current?.signAndSend &&
+                !executingRef.current.has(order.id)
+              ) {
+                executingRef.current.add(order.id);
+                const wallet = optionsRef.current.walletAddress;
+                const sas = optionsRef.current.signAndSend;
+                const sliceAmount = Math.floor(
+                  parseInt(updated.capitalAmount) / updated.dcaSliceCount,
+                ).toString();
+
+                const dcaOrder = { ...updated, capitalAmount: sliceAmount };
+                autoExecuteSwap(dcaOrder, wallet, sas).then((result) => {
+                  executingRef.current.delete(order.id);
+                  if (result.success) {
+                    const newSlices = (updated.dcaSlicesExecuted ?? 0) + 1;
+                    const done = newSlices >= (updated.dcaSliceCount ?? 1);
+                    setOrders((cur) =>
+                      cur.map((o) =>
+                        o.id === order.id
+                          ? {
+                              ...o,
+                              dcaSlicesExecuted: newSlices,
+                              dcaLastSliceAt: Date.now(),
+                              state: done ? "FILLED" : "LENDING",
+                              updatedAt: Date.now(),
+                            }
+                          : o,
+                      ),
+                    );
+                  }
+                });
+              }
+
               const transition = evaluateTransition(updated);
               if (transition) {
-                updated = applyTransition(updated, transition);
+                // Skip APPROACHING transition for DCA orders (they use slice logic above)
+                if (updated.strategy === "dca") {
+                  // DCA stays in LENDING until all slices done
+                } else {
+                  updated = applyTransition(updated, transition);
+                }
 
-                // Auto-execute when transitioning to APPROACHING
+                // Auto-execute when transitioning to APPROACHING (limit orders only)
                 if (
                   transition.to === "APPROACHING" &&
                   optionsRef.current?.walletAddress &&

@@ -27,6 +27,12 @@ export interface CoilOrder {
   yieldSymbol: string | null; // e.g. "jlUSDC"
   strategy: "limit" | "dca" | "perps" | "predict";
 
+  // DCA-specific fields
+  dcaSliceCount?: number;
+  dcaSliceInterval?: number; // ms between slices
+  dcaSlicesExecuted?: number;
+  dcaLastSliceAt?: number;
+
   // Runtime state
   state: CoilState;
   spotPrice: number | null;

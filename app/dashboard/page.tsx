@@ -147,7 +147,7 @@ export default function DashboardPage() {
 
           {activeTab === "DCA" && (
             <div className="animate-fadeIn" key="dca">
-              <DCAPage prices={prices} onPricesUpdate={setPrices} />
+              <DCAPage prices={prices} onPricesUpdate={setPrices} onSubmitOrder={addOrder} />
             </div>
           )}
 

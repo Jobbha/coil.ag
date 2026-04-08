@@ -30,7 +30,8 @@
       "Bash(git push:*)",
       "Bash(git commit --allow-empty -m ':*)",
       "WebFetch(domain:docs.phantom.com)",
-      "WebFetch(domain:docs.jup.ag)"
+      "WebFetch(domain:docs.jup.ag)",
+      "WebFetch(domain:station.jup.ag)"
     ]
   }
 }
