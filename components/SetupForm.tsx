@@ -116,16 +116,48 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
     try {
       const assetMint = activeVault?.assetAddress ?? KNOWN_MINTS.USDC;
       const decimals = activeVault?.decimals ?? 6;
-      const amount = Math.floor(parseFloat(capital) * Math.pow(10, decimals)).toString();
+      const usdcAmount = Math.floor(parseFloat(capital) * 1e6).toString(); // always in USDC terms
 
-      // 1. Build Lend deposit tx via API
+      // 1. If vault asset ≠ USDC, swap USDC → vault asset first
+      let depositAmount = usdcAmount;
+      if (assetMint !== KNOWN_MINTS.USDC) {
+        setTxStatus("Swapping to " + (activeVault?.uiSymbol ?? "vault token") + "...");
+        const swapQs = new URLSearchParams({
+          inputMint: KNOWN_MINTS.USDC,
+          outputMint: assetMint,
+          amount: usdcAmount,
+          taker: publicKey.toBase58(),
+          slippageBps: "50",
+        });
+        const swapRes = await fetch(`/api/swap-quote?${swapQs}`);
+        if (!swapRes.ok) {
+          const err = await swapRes.json().catch(() => ({}));
+          throw new Error(err.error || "Failed to get swap quote");
+        }
+        const swapData = await swapRes.json();
+        if (!swapData.swapTransaction) throw new Error("No swap transaction");
+
+        setTxStatus("Sign swap...");
+        const swapTx = VersionedTransaction.deserialize(Buffer.from(swapData.swapTransaction, "base64"));
+        const signedSwap = await signTransaction(swapTx);
+
+        setTxStatus("Sending swap...");
+        const swapSig = await connection.sendRawTransaction(signedSwap.serialize(), { skipPreflight: false, maxRetries: 3 });
+        await connection.confirmTransaction(swapSig, "confirmed");
+
+        // Use the output amount for the deposit
+        depositAmount = swapData.outputAmount ?? usdcAmount;
+      }
+
+      // 2. Build Lend deposit tx
+      setTxStatus("Building deposit...");
       const res = await fetch("/api/lend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "deposit",
           asset: assetMint,
-          amount,
+          amount: depositAmount,
           signer: publicKey.toBase58(),
         }),
       });
@@ -137,13 +169,12 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
 
       const { transaction: txBase64 } = await res.json();
 
-      // 2. Deserialize and sign
-      setTxStatus("Sign in wallet...");
+      // 3. Sign and send deposit
+      setTxStatus("Sign deposit...");
       const txBytes = Buffer.from(txBase64, "base64");
       const tx = VersionedTransaction.deserialize(txBytes);
       const signed = await signTransaction(tx);
 
-      // 3. Send to chain
       setTxStatus("Sending...");
       const sig = await connection.sendRawTransaction(signed.serialize(), {
         skipPreflight: false,
@@ -194,7 +225,7 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
         targetPrice: parseFloat(targetPrice),
         takeProfitPrice: parseFloat(takeProfit) || 0,
         stopLossPrice: parseFloat(stopLoss) || 0,
-        capitalAmount: amount,
+        capitalAmount: usdcAmount,
         proximityThreshold: parseFloat(threshold) / 100,
         yieldMint: jlToken?.jlMint ?? null,
         yieldSymbol: jlToken?.jlSymbol ?? null,
@@ -272,13 +303,8 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
             className="input-inline flex-1 min-w-0 text-base font-mono font-semibold text-text-primary"
           />
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-bg-card border border-border shrink-0">
-            {activeVault?.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={activeVault.logoUrl} alt={activeVault.uiSymbol} className="w-3.5 h-3.5 rounded-full" />
-            ) : (
-              <div className="w-3.5 h-3.5 rounded-full bg-blue flex items-center justify-center text-sm font-bold text-white">$</div>
-            )}
-            <span className="text-sm font-medium">{activeVault?.uiSymbol ?? "USDC"}</span>
+            <div className="w-3.5 h-3.5 rounded-full bg-blue flex items-center justify-center text-sm font-bold text-white">$</div>
+            <span className="text-sm font-medium">USDC</span>
           </div>
         </div>
       </div>
