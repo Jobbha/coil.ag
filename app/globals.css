@@ -1,26 +1,293 @@
 @import "tailwindcss";
 
+/* ─── Dark theme ─── */
+html.dark {
+  --bg-base: #060809;
+  --bg-shell: #0C0F10;
+  --bg-card: #111415;
+  --bg-card-hover: #161a1b;
+  --bg-inset: #0A0C0D;
+  --border: #1A1F20;
+  --border-subtle: #141818;
+  --text-primary: #F5F7F7;
+  --text-secondary: #8D9698;
+  --text-muted: #646C6F;
+  --text-dim: #3A4042;
+  --mint: #49E7B2;
+  --mint-dark: #31D39A;
+  --mint-dim: #1a6b50;
+  --mint-glow: #49E7B233;
+  --green: #37D48F;
+  --red: #FF4B4B;
+  --blue: #1594FF;
+  --yellow: #E7B849;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-shell: 0 8px 48px rgba(0,0,0,0.5), 0 0 80px rgba(73,231,178,0.03);
+  --neon-opacity: 0.15;
+  --mint-on-bg: #49E7B2;
+  color-scheme: dark;
+}
+
+/* ─── Light theme ─── */
+html.light {
+  --bg-base: #F0F2F4;
+  --bg-shell: #FFFFFF;
+  --bg-card: #F7F8F9;
+  --bg-card-hover: #ECEEF0;
+  --bg-inset: #ECEEF0;
+  --border: #D4D9DD;
+  --border-subtle: #E2E6EA;
+  --text-primary: #0C1014;
+  --text-secondary: #4A5568;
+  --text-muted: #718096;
+  --text-dim: #A0AEC0;
+  --mint: #0D9668;
+  --mint-dark: #0A7B55;
+  --mint-dim: #b5e8d0;
+  --mint-glow: #0D966833;
+  --green: #16A34A;
+  --red: #DC2626;
+  --blue: #2563EB;
+  --yellow: #CA8A04;
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.05);
+  --shadow-shell: 0 4px 24px rgba(0,0,0,0.07);
+  --neon-opacity: 0.05;
+  --mint-on-bg: #0D9668;
+  color-scheme: light;
+}
+
+/* Fallback */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base: #060809;
+  --bg-shell: #0C0F10;
+  --bg-card: #111415;
+  --bg-card-hover: #161a1b;
+  --bg-inset: #0A0C0D;
+  --border: #1A1F20;
+  --border-subtle: #141818;
+  --text-primary: #F5F7F7;
+  --text-secondary: #8D9698;
+  --text-muted: #646C6F;
+  --text-dim: #3A4042;
+  --mint: #49E7B2;
+  --mint-dark: #31D39A;
+  --mint-dim: #1a6b50;
+  --mint-glow: #49E7B233;
+  --green: #37D48F;
+  --red: #FF4B4B;
+  --blue: #1594FF;
+  --yellow: #E7B849;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-shell: 0 8px 48px rgba(0,0,0,0.5), 0 0 80px rgba(73,231,178,0.03);
+  --neon-opacity: 0.15;
+  --mint-on-bg: #49E7B2;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-base: var(--bg-base);
+  --color-bg-shell: var(--bg-shell);
+  --color-bg-card: var(--bg-card);
+  --color-bg-card-hover: var(--bg-card-hover);
+  --color-bg-inset: var(--bg-inset);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-dim: var(--text-dim);
+  --color-mint: var(--mint);
+  --color-mint-dark: var(--mint-dark);
+  --color-mint-dim: var(--mint-dim);
+  --color-mint-glow: var(--mint-glow);
+  --color-green: var(--green);
+  --color-red: var(--red);
+  --color-blue: var(--blue);
+  --color-yellow: var(--yellow);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Base ─── */
+
+html, body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ─── Neon background ─── */
+
+.neon-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.neon-bg::before,
+.neon-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: var(--neon-opacity);
+}
+
+.neon-bg::before {
+  width: 800px;
+  height: 600px;
+  background: radial-gradient(ellipse, var(--mint) 0%, transparent 70%);
+  top: -200px;
+  left: -100px;
+  transform: rotate(-25deg);
+}
+
+.neon-bg::after {
+  width: 600px;
+  height: 500px;
+  background: radial-gradient(ellipse, var(--mint-dark) 0%, transparent 70%);
+  bottom: -150px;
+  right: -50px;
+  transform: rotate(15deg);
+}
+
+.neon-streak {
+  position: absolute;
+  background: linear-gradient(135deg, var(--mint-glow) 0%, transparent 60%);
+  filter: blur(80px);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ─── Scrollbar ─── */
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--mint-dim); border-radius: 2px; }
+
+/* ─── Inputs ─── */
+
+input[type="text"],
+input[type="number"],
+select {
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--mint);
+  box-shadow: 0 0 0 1px var(--mint-glow);
+}
+
+input::placeholder {
+  color: var(--text-dim);
+}
+
+/* Reset for inline inputs inside custom containers */
+input.input-inline,
+input.input-inline:focus {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  font-size: inherit;
+}
+
+input.input-inline::-webkit-inner-spin-button,
+input.input-inline::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input.input-inline {
+  -moz-appearance: textfield;
+}
+
+/* ─── Utility ─── */
+
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  overflow: visible;
+}
+
+.app-shell {
+  background: var(--bg-shell);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: var(--shadow-shell);
+}
+
+/* ─── Animations ─── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mintPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--mint-glow); }
+  50% { box-shadow: 0 0 12px 4px var(--mint-glow); }
+}
+
+.animate-fadeIn { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.animate-scaleIn { animation: scaleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.animate-slideDown { animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.animate-mintPulse { animation: mintPulse 2s ease-in-out infinite; }
+
+.stagger-children > * { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 280ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 320ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 360ms; }
+
+.transition-number { transition: color 0.3s, transform 0.2s; }
+
+button:active:not(:disabled) { transform: scale(0.97); }
+button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ─── Smooth theme transition ─── */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              fill 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
