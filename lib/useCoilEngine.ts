@@ -161,6 +161,52 @@ async function autoExecuteSwap(
   }
 }
 
+/** Verify orders against on-chain Lend positions — mark stale orders */
+async function verifyLendPositions(
+  orders: CoilOrder[],
+  walletAddress: string,
+): Promise<Record<string, { stale: boolean; realYield?: number }>> {
+  const results: Record<string, { stale: boolean; realYield?: number }> = {};
+
+  const lendingOrders = orders.filter((o) =>
+    ["LENDING", "APPROACHING"].includes(o.state) && o.yieldMint,
+  );
+  if (lendingOrders.length === 0) return results;
+
+  try {
+    const res = await fetch(`/api/lend?action=positions&wallet=${walletAddress}`);
+    if (!res.ok) return results;
+    const positions = await res.json();
+    if (!Array.isArray(positions)) return results;
+
+    // Build a set of mints the user actually holds in Lend
+    const heldMints = new Set<string>();
+    for (const pos of positions) {
+      if (pos.mint) heldMints.add(pos.mint);
+    }
+
+    for (const order of lendingOrders) {
+      const jlMint = order.yieldMint;
+      if (jlMint && !heldMints.has(jlMint)) {
+        // User no longer holds this jlToken — order is stale
+        results[order.id] = { stale: true };
+      } else if (jlMint) {
+        // User still holds it — pull real yield data
+        const pos = positions.find((p: { mint: string }) => p.mint === jlMint);
+        if (pos?.value_usd) {
+          const capitalUsd = parseInt(order.capitalAmount) / 1e6;
+          const realYield = Math.max(0, pos.value_usd - capitalUsd);
+          results[order.id] = { stale: false, realYield };
+        }
+      }
+    }
+  } catch {
+    // Silent fail
+  }
+
+  return results;
+}
+
 /** Poll Jupiter Trigger API for order status updates */
 async function pollTriggerStatus(
   orders: CoilOrder[],
@@ -251,12 +297,37 @@ export function useCoilEngine(initialOrders: CoilOrder[], options?: EngineOption
     );
   }, []);
 
+  // On-chain verification — check Lend positions every 30s
+  const lastVerifyRef = useRef<number>(0);
+
   // Price polling + state machine + auto-execution
   useEffect(() => {
     async function tick() {
       const now = Date.now();
       if (now - lastFetchRef.current < 8_000) return;
       lastFetchRef.current = now;
+
+      // Verify on-chain state every 30s
+      const wallet = optionsRef.current?.walletAddress;
+      if (wallet && now - lastVerifyRef.current > 30_000) {
+        lastVerifyRef.current = now;
+        verifyLendPositions(orders, wallet).then((results) => {
+          if (Object.keys(results).length === 0) return;
+          setOrders((cur) =>
+            cur.map((o) => {
+              const r = results[o.id];
+              if (!r) return o;
+              if (r.stale) {
+                return { ...o, state: "EXPIRED" as const, error: "Position no longer found on-chain", updatedAt: Date.now() };
+              }
+              if (r.realYield !== undefined) {
+                return { ...o, yieldEarned: r.realYield, updatedAt: Date.now() };
+              }
+              return o;
+            }),
+          );
+        });
+      }
 
       setOrders((prev) => {
         const activeMints = new Set<string>();
@@ -276,17 +347,6 @@ export function useCoilEngine(initialOrders: CoilOrder[], options?: EngineOption
               if (!price) return order;
 
               let updated = updateSpot(order, price);
-
-              // Yield accrues while capital is in Lend
-              if (updated.state === "LENDING" || updated.state === "APPROACHING") {
-                const elapsed = (Date.now() - updated.createdAt) / 1000;
-                const capitalUsd = parseInt(updated.capitalAmount) / 1e6;
-                const annualYield = capitalUsd * 0.05;
-                updated = {
-                  ...updated,
-                  yieldEarned: (annualYield * elapsed) / (365 * 24 * 3600),
-                };
-              }
 
               // DCA: execute slices on schedule
               if (
