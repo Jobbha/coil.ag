@@ -62,6 +62,9 @@ export async function POST(req: NextRequest) {
         if (!isValidAddress(params.inputMint)) {
           return NextResponse.json({ error: "Invalid inputMint address" }, { status: 400 });
         }
+        if (typeof params.amount !== "string" || !/^\d+$/.test(params.amount) || params.amount === "0") {
+          return NextResponse.json({ error: "amount must be a positive integer string" }, { status: 400 });
+        }
         const res = await triggerDepositCraft(jwt, params.inputMint, params.amount);
         return NextResponse.json(res);
       }
@@ -79,7 +82,25 @@ export async function POST(req: NextRequest) {
         if (!isValidAddress(params.outputMint)) {
           return NextResponse.json({ error: "Invalid outputMint address" }, { status: 400 });
         }
-        const res = await triggerCreateOrder(jwt, params);
+        const validOrderTypes = ["single", "oco", "otoco"];
+        if (params.orderType && !validOrderTypes.includes(params.orderType)) {
+          return NextResponse.json({ error: "Invalid orderType" }, { status: 400 });
+        }
+        if (isNaN(Number(params.triggerPrice)) || Number(params.triggerPrice) <= 0) {
+          return NextResponse.json({ error: "triggerPrice must be a positive number" }, { status: 400 });
+        }
+        // Whitelist only expected fields
+        const orderParams = {
+          inputMint: params.inputMint,
+          outputMint: params.outputMint,
+          triggerPrice: params.triggerPrice,
+          orderType: params.orderType ?? "single",
+          signedDepositTxn: params.signedDepositTxn,
+          ...(params.expiryTime && { expiryTime: params.expiryTime }),
+          ...(params.takeProfitPrice && { takeProfitPrice: params.takeProfitPrice }),
+          ...(params.stopLossPrice && { stopLossPrice: params.stopLossPrice }),
+        };
+        const res = await triggerCreateOrder(jwt, orderParams);
         return NextResponse.json(res);
       }
 
@@ -89,6 +110,9 @@ export async function POST(req: NextRequest) {
             { error: "jwt and orderId required" },
             { status: 400 },
           );
+        }
+        if (typeof params.orderId !== "string" || !/^[a-zA-Z0-9_-]+$/.test(params.orderId)) {
+          return NextResponse.json({ error: "Invalid orderId format" }, { status: 400 });
         }
         await triggerCancelOrder(jwt, params.orderId);
         return NextResponse.json({ success: true });

@@ -20,7 +20,10 @@ export async function GET(req: NextRequest) {
   const outputMint = req.nextUrl.searchParams.get("outputMint");
   const amount = req.nextUrl.searchParams.get("amount");
   const taker = req.nextUrl.searchParams.get("taker");
-  const slippageBps = req.nextUrl.searchParams.get("slippageBps") ?? "50";
+  const rawSlippage = req.nextUrl.searchParams.get("slippageBps") ?? "50";
+  const slippageNum = parseInt(rawSlippage);
+  const slippageBps = (!isNaN(slippageNum) && slippageNum >= 1 && slippageNum <= 500)
+    ? String(slippageNum) : "50";
 
   if (!inputMint || !outputMint || !amount) {
     return NextResponse.json(

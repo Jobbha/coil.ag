@@ -67,6 +67,9 @@ export async function POST(req: NextRequest) {
     if (!isValidAddress(asset)) {
       return NextResponse.json({ error: "Invalid asset address" }, { status: 400 });
     }
+    if (typeof amount !== "string" || !/^\d+$/.test(amount) || amount === "0") {
+      return NextResponse.json({ error: "amount must be a positive integer string" }, { status: 400 });
+    }
 
     if (action === "deposit") {
       const tx = await lendDeposit(asset, amount, signer);
