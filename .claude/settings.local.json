@@ -28,7 +28,9 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
-      "Bash(git commit --allow-empty -m ':*)"
+      "Bash(git commit --allow-empty -m ':*)",
+      "WebFetch(domain:docs.phantom.com)",
+      "WebFetch(domain:docs.jup.ag)"
     ]
   }
 }

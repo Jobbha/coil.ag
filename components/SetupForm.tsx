@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { VersionedTransaction } from "@solana/web3.js";
+import bs58 from "bs58";
 import type { CoilOrder } from "@/lib/coilEngine";
 import { createOrder, KNOWN_MINTS } from "@/lib/coilEngine";
 import { getJlToken } from "@/lib/jlTokens";
@@ -31,7 +32,7 @@ interface Props {
 }
 
 export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange }: Props) {
-  const { publicKey, signTransaction, connected } = useWallet();
+  const { publicKey, signTransaction, signMessage, connected } = useWallet();
   const { connection } = useConnection();
   const { setVisible } = useWalletModal();
 
@@ -153,7 +154,39 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
       setTxStatus("Confirming...");
       await connection.confirmTransaction(sig, "confirmed");
 
-      // 5. Create order with real tx signature
+      // 5. Get Trigger JWT for auto-execution later
+      let triggerJwt: string | null = null;
+      if (signMessage) {
+        try {
+          setTxStatus("Authenticating for limit orders...");
+          const challengeRes = await fetch("/api/trigger", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "challenge", wallet: publicKey.toBase58() }),
+          });
+          if (challengeRes.ok) {
+            const { challenge } = await challengeRes.json();
+            setTxStatus("Sign auth challenge...");
+            const msgBytes = new TextEncoder().encode(challenge);
+            const sigBytes = await signMessage(msgBytes);
+            const signature = bs58.encode(sigBytes);
+
+            const verifyRes = await fetch("/api/trigger", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "verify", challenge, signature }),
+            });
+            if (verifyRes.ok) {
+              const { jwt } = await verifyRes.json();
+              triggerJwt = jwt;
+            }
+          }
+        } catch {
+          // JWT auth failed — order will use swap fallback instead of Trigger
+        }
+      }
+
+      // 6. Create order with real tx signature + JWT
       const jlToken = getJlToken(assetMint);
       const order = createOrder({
         inputMint: assetMint,
@@ -168,6 +201,7 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
         strategy: "limit",
       });
       order.lendTxSignature = sig;
+      order.triggerJwt = triggerJwt;
 
       onSubmit(order);
       setTxStatus("");
