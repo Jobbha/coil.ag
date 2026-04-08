@@ -94,48 +94,92 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               ? `${o.distancePct > 0 ? "+" : ""}${(o.distancePct * 100).toFixed(2)}%`
               : "—";
 
+            const capitalUsd = parseInt(o.capitalAmount, 10) / 1e6;
+
             return (
               <div key={o.id} className="border-t border-border-subtle">
-                {/* Row */}
+                {/* Row — responsive: card on mobile, inline on desktop */}
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : o.id)}
-                  className="w-full flex items-center gap-0 px-4 py-2.5 text-left hover:bg-bg-card-hover transition-colors text-sm"
+                  className="w-full px-4 py-3 text-left hover:bg-bg-card-hover transition-colors"
                 >
-                  <span className="w-[20%] md:w-[12%] font-mono text-blue truncate">
-                    {o.outputMint.slice(0, 4)}…{o.outputMint.slice(-4)}
-                  </span>
-                  <span className="w-[25%] md:w-[14%]">
-                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs md:text-sm font-semibold ${cfg.bg} ${cfg.color}`}>
-                      {["LENDING", "APPROACHING", "PLACED"].includes(o.state) && (
-                        <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
-                      )}
-                      {cfg.label}
+                  {/* Mobile card layout */}
+                  <div className="md:hidden space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm text-blue">{o.outputMint.slice(0, 4)}…{o.outputMint.slice(-4)}</span>
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold ${cfg.bg} ${cfg.color}`}>
+                          {["LENDING", "APPROACHING", "PLACED"].includes(o.state) && (
+                            <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                          )}
+                          {cfg.label}
+                        </span>
+                      </div>
+                      <span className="text-xs text-text-dim">{formatAge(o.createdAt)}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <span className="text-text-dim block">Capital</span>
+                        <span className="text-text-primary font-mono">${capitalUsd.toFixed(0)}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-dim block">Target</span>
+                        <span className="text-text-primary font-mono">${o.targetPrice.toFixed(2)}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-dim block">Yield</span>
+                        <span className="text-mint font-mono">+${o.yieldEarned.toFixed(4)}</span>
+                      </div>
+                    </div>
+                    {o.takeProfitPrice > 0 && (
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-green font-mono">TP ${o.takeProfitPrice.toFixed(2)}</span>
+                        <span className="text-red font-mono">SL ${o.stopLossPrice.toFixed(2)}</span>
+                        {o.spotPrice !== null && (
+                          <span className="text-text-dim font-mono ml-auto">Spot ${o.spotPrice.toFixed(2)}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Desktop inline layout */}
+                  <div className="hidden md:flex items-center gap-0 text-sm">
+                    <span className="w-[12%] font-mono text-blue truncate">
+                      {o.outputMint.slice(0, 4)}…{o.outputMint.slice(-4)}
                     </span>
-                  </span>
-                  <span className="w-[15%] md:w-[10%] font-mono text-text-primary">${o.targetPrice.toFixed(2)}</span>
-                  <span className="hidden md:inline w-[10%] font-mono text-text-secondary">
-                    {o.spotPrice !== null ? `$${o.spotPrice.toFixed(2)}` : "—"}
-                  </span>
-                  <span className={`hidden md:inline w-[8%] font-mono ${
-                    o.distancePct !== null && Math.abs(o.distancePct) <= o.proximityThreshold
-                      ? "text-yellow" : "text-text-secondary"
-                  }`}>{dist}</span>
-                  <span className="hidden md:inline w-[14%] font-mono">
-                    <span className="text-green">${o.takeProfitPrice.toFixed(2)}</span>
-                    <span className="text-text-dim mx-0.5">/</span>
-                    <span className="text-red">${o.stopLossPrice.toFixed(2)}</span>
-                  </span>
-                  <span className="hidden md:inline w-[8%] font-mono text-text-primary">${(parseInt(o.capitalAmount, 10) / 1e6).toFixed(0)}</span>
-                  <span className="w-[20%] md:w-[10%] font-mono text-mint">+${o.yieldEarned.toFixed(4)}</span>
-                  <span className="w-[12%] md:w-[8%] text-right text-text-dim">{formatAge(o.createdAt)}</span>
-                  <span className="w-[8%] md:w-[6%] text-right text-text-dim">
-                    <svg
-                      width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
-                      className={`inline transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                    >
-                      <path d="M1 1l4 4 4-4" />
-                    </svg>
-                  </span>
+                    <span className="w-[14%]">
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-sm font-semibold ${cfg.bg} ${cfg.color}`}>
+                        {["LENDING", "APPROACHING", "PLACED"].includes(o.state) && (
+                          <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                        )}
+                        {cfg.label}
+                      </span>
+                    </span>
+                    <span className="w-[10%] font-mono text-text-primary">${o.targetPrice.toFixed(2)}</span>
+                    <span className="w-[10%] font-mono text-text-secondary">
+                      {o.spotPrice !== null ? `$${o.spotPrice.toFixed(2)}` : "—"}
+                    </span>
+                    <span className={`w-[8%] font-mono ${
+                      o.distancePct !== null && Math.abs(o.distancePct) <= o.proximityThreshold
+                        ? "text-yellow" : "text-text-secondary"
+                    }`}>{dist}</span>
+                    <span className="w-[14%] font-mono">
+                      <span className="text-green">${o.takeProfitPrice.toFixed(2)}</span>
+                      <span className="text-text-dim mx-0.5">/</span>
+                      <span className="text-red">${o.stopLossPrice.toFixed(2)}</span>
+                    </span>
+                    <span className="w-[8%] font-mono text-text-primary">${capitalUsd.toFixed(0)}</span>
+                    <span className="w-[10%] font-mono text-mint">+${o.yieldEarned.toFixed(4)}</span>
+                    <span className="w-[8%] text-right text-text-dim">{formatAge(o.createdAt)}</span>
+                    <span className="w-[6%] text-right text-text-dim">
+                      <svg
+                        width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+                        className={`inline transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      >
+                        <path d="M1 1l4 4 4-4" />
+                      </svg>
+                    </span>
+                  </div>
                 </button>
 
                 {/* Expanded detail panel */}
@@ -156,17 +200,46 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
             <span className="text-xs text-text-dim uppercase tracking-wider font-medium">On-Chain Lend Positions</span>
           </div>
           {lendPositions.map((pos) => (
-            <div key={pos.mint} className="flex items-center gap-3 px-4 py-2.5 border-t border-border-subtle text-sm">
-              <span className="w-[20%] font-mono text-blue truncate">{pos.mint.slice(0, 6)}...{pos.mint.slice(-4)}</span>
-              <span className="w-[20%]">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
-                  <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
-                  Earning
+            <div key={pos.mint} className="px-4 py-2.5 border-t border-border-subtle">
+              {/* Mobile */}
+              <div className="md:hidden space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm text-blue">{pos.mint.slice(0, 6)}...{pos.mint.slice(-4)}</span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
+                      <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                      Earning
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span className="text-text-dim block">Amount</span>
+                    <span className="text-text-primary font-mono">{parseFloat(pos.amount).toFixed(4)}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-dim block">Value</span>
+                    <span className="text-text-primary font-mono">${pos.value_usd.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-dim block">APY</span>
+                    <span className="text-mint font-mono">{pos.apy?.toFixed(2) ?? "—"}%</span>
+                  </div>
+                </div>
+              </div>
+              {/* Desktop */}
+              <div className="hidden md:flex items-center gap-3 text-sm">
+                <span className="w-[20%] font-mono text-blue truncate">{pos.mint.slice(0, 6)}...{pos.mint.slice(-4)}</span>
+                <span className="w-[20%]">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
+                    <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                    Earning
+                  </span>
                 </span>
-              </span>
-              <span className="w-[20%] font-mono text-text-primary">{parseFloat(pos.amount).toFixed(4)}</span>
-              <span className="w-[15%] font-mono text-text-secondary">${pos.value_usd.toFixed(2)}</span>
-              <span className="w-[15%] font-mono text-mint">{pos.apy?.toFixed(2) ?? "—"}% APY</span>
+                <span className="w-[20%] font-mono text-text-primary">{parseFloat(pos.amount).toFixed(4)}</span>
+                <span className="w-[15%] font-mono text-text-secondary">${pos.value_usd.toFixed(2)}</span>
+                <span className="w-[15%] font-mono text-mint">{pos.apy?.toFixed(2) ?? "—"}% APY</span>
+              </div>
             </div>
           ))}
         </div>
