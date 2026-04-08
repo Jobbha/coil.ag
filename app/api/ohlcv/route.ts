@@ -24,8 +24,17 @@ const TF_CONFIG: Record<string, { timeframe: string; aggregate: number; limit: n
 
 const ALLOWED_TF = new Set(Object.keys(TF_CONFIG));
 
+// Known high-liquidity USDC pools for popular tokens (avoids bad pool discovery)
+const KNOWN_POOLS: Record<string, string> = {
+  "So11111111111111111111111111111111111111112": "83v8iPyZihDEjDdY8RdZddyZNyUtXngz69Lgo9Kt5d6d", // SOL/USDC Raydium
+  "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN": "HkLEttvwk2b4QDAHzNcVtxsvBG35L1gmYY4pecF9LrFe", // JUP/USDC
+  "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263": "Dw4kGSRcREdfeLHWbLDoRnEgkTz5Jj4FhZJR4Lf3q7kU", // BONK/SOL
+};
+
 /** Find the highest-volume USDC pool for a given token on Solana */
 async function findPool(mint: string): Promise<string | null> {
+  // Check known pools first
+  if (KNOWN_POOLS[mint]) return KNOWN_POOLS[mint];
   const cached = poolCache.get(mint);
   if (cached && Date.now() < cached.expiry) return cached.pool;
 
