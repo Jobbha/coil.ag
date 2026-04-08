@@ -80,19 +80,3 @@ export default function YieldPicker({ selected, onSelect }: Props) {
     </div>
   );
 }
-
-export function useSelectedVaultApy(vaultAddress: string): number {
-  const [apy, setApy] = useState(3.8);
-  useEffect(() => {
-    fetch("/api/lend?action=tokens")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!Array.isArray(data)) return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const match = data.find((v: any) => v.assetAddress === vaultAddress);
-        if (match) setApy(parseFloat(match.totalRate) / 100);
-      })
-      .catch(() => {});
-  }, [vaultAddress]);
-  return apy;
-}

@@ -17,7 +17,6 @@ export default function Portfolio({ orders }: Props) {
   const totalCapital = orders.reduce((s, o) => s + parseInt(o.capitalAmount) / 1e6, 0);
   const activeCapital = active.reduce((s, o) => s + parseInt(o.capitalAmount) / 1e6, 0);
   const totalYield = orders.reduce((s, o) => s + o.yieldEarned, 0);
-  const filledYield = filled.reduce((s, o) => s + o.yieldEarned, 0);
   const activeYield = active.reduce((s, o) => s + o.yieldEarned, 0);
 
   // Weighted avg APY across active orders

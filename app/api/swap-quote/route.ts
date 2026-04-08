@@ -4,6 +4,10 @@ import { isValidAddress, sanitizeError } from "@/lib/validation";
 
 const BASE = "https://api.jup.ag";
 
+// Platform fee: 0.1% (10 bps) on every swap — revenue goes to this wallet
+const PLATFORM_FEE_BPS = "10";
+const FEE_ACCOUNT = process.env.COIL_FEE_WALLET ?? "";
+
 /**
  * GET /api/swap-quote?inputMint=...&outputMint=...&amount=...&taker=...
  *
@@ -41,6 +45,11 @@ export async function GET(req: NextRequest) {
   try {
     const params: Record<string, string> = { inputMint, outputMint, amount, slippageBps };
     if (taker) params.taker = taker;
+    // Add platform fee if configured
+    if (PLATFORM_FEE_BPS && FEE_ACCOUNT) {
+      params.platformFeeBps = PLATFORM_FEE_BPS;
+      params.feeAccount = FEE_ACCOUNT;
+    }
 
     const qs = new URLSearchParams(params);
     const res = await fetch(`${BASE}/swap/v2/order?${qs}`, { headers: jupiterHeaders() });

@@ -92,7 +92,6 @@ export default function DCAPage({ prices, onPricesUpdate, onSubmitOrder }: Props
 
       // Create DCA order — engine will execute slices on schedule
       const jlToken = getJlToken(assetMint);
-      const sliceAmount = Math.floor(capitalNum / sliceNum * 1e6).toString();
 
       const order = createOrder({
         inputMint: assetMint,

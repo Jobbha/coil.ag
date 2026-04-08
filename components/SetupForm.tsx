@@ -27,7 +27,6 @@ interface Props {
   token: TokenListItem;
   onSubmit: (order: CoilOrder) => void;
   onBack: () => void;
-  disabled?: boolean;
   onTargetPriceChange?: (price: number | null) => void;
 }
 
