@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { VersionedTransaction } from "@solana/web3.js";
+import { VersionedTransaction, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
 import type { CoilOrder } from "@/lib/coilEngine";
 import { createOrder, KNOWN_MINTS } from "@/lib/coilEngine";
@@ -139,9 +139,11 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
           const swapSig = await connection.sendRawTransaction(signedSwap.serialize(), { skipPreflight: false, maxRetries: 3 });
           await connection.confirmTransaction(swapSig, "confirmed");
 
-          // Use 99% of estimated output to account for slippage/rounding
-          const rawOutput = parseInt(swapData.outputAmount ?? usdcAmount);
-          depositAmount = Math.floor(rawOutput * 0.99).toString();
+          // Fetch actual token balance after swap (not estimate)
+          setTxStatus("Checking balance...");
+          const accounts = await connection.getParsedTokenAccountsByOwner(publicKey, { mint: new PublicKey(assetMint) });
+          const actualBalance = accounts.value[0]?.account?.data?.parsed?.info?.tokenAmount?.amount;
+          depositAmount = actualBalance ?? Math.floor(parseInt(swapData.outputAmount ?? usdcAmount) * 0.95).toString();
         } else {
           // No swap route available — fall back to USDC vault
           setTxStatus("No route to " + (activeVault?.uiSymbol ?? "") + ", using USDC...");
