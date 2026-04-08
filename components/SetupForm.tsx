@@ -139,7 +139,9 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
           const swapSig = await connection.sendRawTransaction(signedSwap.serialize(), { skipPreflight: false, maxRetries: 3 });
           await connection.confirmTransaction(swapSig, "confirmed");
 
-          depositAmount = swapData.outputAmount ?? usdcAmount;
+          // Use 99% of estimated output to account for slippage/rounding
+          const rawOutput = parseInt(swapData.outputAmount ?? usdcAmount);
+          depositAmount = Math.floor(rawOutput * 0.99).toString();
         } else {
           // No swap route available — fall back to USDC vault
           setTxStatus("No route to " + (activeVault?.uiSymbol ?? "") + ", using USDC...");
