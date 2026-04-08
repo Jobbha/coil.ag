@@ -11,7 +11,10 @@ import { clusterApiUrl } from "@solana/web3.js";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 export default function WalletProvider({ children }: { children: ReactNode }) {
-  const endpoint = useMemo(() => clusterApiUrl("mainnet-beta"), []);
+  const endpoint = useMemo(
+    () => process.env.NEXT_PUBLIC_HELIUS_RPC_URL || clusterApiUrl("mainnet-beta"),
+    [],
+  );
 
   // No explicit adapters needed — Phantom and Solflare register as Standard Wallets
   const wallets = useMemo(() => [], []);
