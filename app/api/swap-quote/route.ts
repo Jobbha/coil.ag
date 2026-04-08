@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       inputMint,
       outputMint,
       inputAmount: amount,
-      outputAmount: data.outputAmount,
+      outputAmount: data.outAmount ?? data.outputAmount,
       priceImpactPct: data.priceImpactPct,
       routeDescription: data.routePlan?.map(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,8 +68,10 @@ export async function GET(req: NextRequest) {
     };
 
     // Include transaction when taker is provided (needed for signing)
-    if (taker && data.swapTransaction) {
-      result.swapTransaction = data.swapTransaction;
+    // Jupiter Swap V2 returns "transaction" (not "swapTransaction")
+    const txField = data.transaction ?? data.swapTransaction;
+    if (taker && txField) {
+      result.swapTransaction = txField;
       result.requestId = data.requestId;
     }
 

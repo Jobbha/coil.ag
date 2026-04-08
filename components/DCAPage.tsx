@@ -146,7 +146,7 @@ export default function DCAPage({ prices, onPricesUpdate, onSubmitOrder }: Props
             </div>
             <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
               <p className="text-xs text-text-dim uppercase tracking-wider">Idle capital earns</p>
-              <p className="text-sm font-semibold text-mint mt-1">~3-8% APY</p>
+              <p className="text-sm font-semibold text-mint mt-1">Variable APY</p>
             </div>
             <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
               <p className="text-xs text-text-dim uppercase tracking-wider">Powered by</p>
@@ -225,7 +225,7 @@ export default function DCAPage({ prices, onPricesUpdate, onSubmitOrder }: Props
               </div>
               <div className="flex justify-between">
                 <span className="text-text-dim">Yield while waiting</span>
-                <span className="text-mint font-mono">~${((capitalNum / 2) * 0.05 / 365 * (totalHours / 24)).toFixed(4)}</span>
+                <span className="text-mint font-mono">Earning in Lend</span>
               </div>
             </div>
 

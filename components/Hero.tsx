@@ -25,7 +25,7 @@ export default function Hero({ onGetStarted }: { onGetStarted?: () => void }) {
             </button>
           )}
           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border-subtle">
-            <Stat label="APY" value="~5%" sub="Jupiter Lend" />
+            <Stat label="APY" value="Variable" sub="Jupiter Lend" />
             <Stat label="Order" value="OTOCO" sub="TP + SL" />
             <Stat label="APIs" value="7" sub="Jupiter" />
           </div>
@@ -65,13 +65,13 @@ export default function Hero({ onGetStarted }: { onGetStarted?: () => void }) {
             </div>
             <div className="space-y-3">
               <Step n="1" title="Choose your entry" desc="Pick a token and set the price you want to buy at" icon={<TargetIcon />} />
-              <Step n="2" title="Capital earns yield" desc="Your USDC earns ~5% APY in Jupiter Lend while waiting" icon={<YieldIcon />} active />
+              <Step n="2" title="Capital earns yield" desc="Your USDC earns yield in Jupiter Lend while waiting" icon={<YieldIcon />} active />
               <Step n="3" title="Auto-triggers at target" desc="When price approaches, Coil withdraws and places your OTOCO order" icon={<BoltIcon />} />
               <Step n="4" title="Profit + bonus yield" desc="Order fills at your price — yield earned during the wait is pure bonus" icon={<SparkleIcon />} />
             </div>
           </div>
           <div id="how-it-works" className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-border-subtle">
-            <Stat label="Lending APY" value="~5.2%" sub="via Jupiter Lend" />
+            <Stat label="Lending APY" value="Variable" sub="via Jupiter Lend" />
             <Stat label="Order Type" value="OTOCO" sub="Entry + TP + SL in one" />
             <Stat label="APIs Used" value="7" sub="Price, Lend, Trigger, Swap, Tokens, Recurring, Prediction" />
           </div>

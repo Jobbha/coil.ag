@@ -51,7 +51,7 @@ export default function PerpsPage({ prices, onPricesUpdate }: Props) {
             </div>
             <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
               <p className="text-xs text-text-dim uppercase tracking-wider">Collateral earns</p>
-              <p className="text-sm font-semibold text-mint mt-1">~3-5% APY</p>
+              <p className="text-sm font-semibold text-mint mt-1">Variable APY</p>
             </div>
             <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
               <p className="text-xs text-text-dim uppercase tracking-wider">Max leverage</p>
@@ -155,7 +155,7 @@ export default function PerpsPage({ prices, onPricesUpdate }: Props) {
               </div>
               <div className="flex justify-between">
                 <span className="text-text-dim">Collateral yield</span>
-                <span className="text-mint font-mono">~3.8% APY</span>
+                <span className="text-mint font-mono">Variable APY</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-dim">Mechanism</span>
@@ -167,11 +167,14 @@ export default function PerpsPage({ prices, onPricesUpdate }: Props) {
             <YieldPicker selected={yieldVault} onSelect={setYieldVault} />
 
             {/* CTA */}
-            <button className={`w-full py-2.5 rounded-lg font-semibold text-sm uppercase tracking-wide
-              ${side === "long" ? "bg-green text-bg-base" : "bg-red text-white"}
-              shadow-[0_0_16px_rgba(73,231,178,0.1)]`}>
-              Open {leverageNum.toFixed(1)}x {side === "long" ? "Long" : "Short"} — ${token.symbol}
+            <button
+              disabled
+              className="w-full py-2.5 rounded-lg font-semibold text-sm uppercase tracking-wide
+                bg-bg-inset border border-border text-text-dim cursor-not-allowed"
+            >
+              Coming Soon — Leveraged Coil
             </button>
+            <p className="text-xs text-text-dim text-center">Leveraged positions with yield on collateral — launching soon</p>
           </div>
         </div>
       </div>

@@ -31,7 +31,10 @@
       "Bash(git commit --allow-empty -m ':*)",
       "WebFetch(domain:docs.phantom.com)",
       "WebFetch(domain:docs.jup.ag)",
-      "WebFetch(domain:station.jup.ag)"
+      "WebFetch(domain:station.jup.ag)",
+      "Bash(git rm:*)",
+      "Bash(ls -la /c/Users/User/Desktop/Coil/components/*.tsx)",
+      "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('Keys:', Object.keys\\(j\\).join\\(', '\\)\\);console.log\\('Has swapTransaction:', !!j.swapTransaction\\);console.log\\('swapTransaction length:', j.swapTransaction?.length ?? 'N/A'\\)}\\)\")"
     ]
   }
 }

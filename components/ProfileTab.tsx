@@ -12,6 +12,7 @@ export default function ProfileTab() {
   const { setVisible } = useWalletModal();
   const { logout: privyLogout, user: privyUser, authenticated } = usePrivy();
   const [balance, setBalance] = useState<number | null>(null);
+  const [solPrice, setSolPrice] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
   const addr = publicKey?.toBase58() ?? "";
@@ -21,6 +22,14 @@ export default function ProfileTab() {
   useEffect(() => {
     if (!publicKey) return;
     connection.getBalance(publicKey).then((b) => setBalance(b / LAMPORTS_PER_SOL)).catch(() => {});
+    // Fetch live SOL price
+    fetch("/api/price?ids=So11111111111111111111111111111111111111112")
+      .then((r) => r.json())
+      .then((d) => {
+        const p = d["So11111111111111111111111111111111111111112"];
+        if (p?.usdPrice) setSolPrice(p.usdPrice);
+      })
+      .catch(() => {});
   }, [publicKey, connection]);
 
   function copyAddress() {
@@ -135,7 +144,7 @@ export default function ProfileTab() {
             {connected && balance !== null ? balance.toFixed(4) : "—"}
           </p>
           <p className="text-sm text-text-muted mt-1">
-            {connected && balance !== null ? `≈ $${(balance * 82).toFixed(2)}` : connected ? "Loading..." : "Connect wallet"}
+            {connected && balance !== null && solPrice ? `≈ $${(balance * solPrice).toFixed(2)}` : connected ? "Loading..." : "Connect wallet"}
           </p>
         </div>
 

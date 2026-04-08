@@ -114,11 +114,10 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
     setTxStatus("Building deposit...");
 
     try {
-      const assetMint = activeVault?.assetAddress ?? KNOWN_MINTS.USDC;
-      const decimals = activeVault?.decimals ?? 6;
-      const usdcAmount = Math.floor(parseFloat(capital) * 1e6).toString(); // always in USDC terms
+      let assetMint = activeVault?.assetAddress ?? KNOWN_MINTS.USDC;
+      const usdcAmount = Math.floor(parseFloat(capital) * 1e6).toString();
 
-      // 1. If vault asset ≠ USDC, swap USDC → vault asset first
+      // 1. If vault asset ≠ USDC, try to swap USDC → vault asset first
       let depositAmount = usdcAmount;
       if (assetMint !== KNOWN_MINTS.USDC) {
         setTxStatus("Swapping to " + (activeVault?.uiSymbol ?? "vault token") + "...");
@@ -127,26 +126,27 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
           outputMint: assetMint,
           amount: usdcAmount,
           taker: publicKey.toBase58(),
-          slippageBps: "50",
+          slippageBps: "100",
         });
         const swapRes = await fetch(`/api/swap-quote?${swapQs}`);
-        if (!swapRes.ok) {
-          const err = await swapRes.json().catch(() => ({}));
-          throw new Error(err.error || "Failed to get swap quote");
+        const swapData = swapRes.ok ? await swapRes.json() : null;
+
+        if (swapData?.swapTransaction) {
+          setTxStatus("Sign swap...");
+          const swapTx = VersionedTransaction.deserialize(Buffer.from(swapData.swapTransaction, "base64"));
+          const signedSwap = await signTransaction(swapTx);
+
+          setTxStatus("Sending swap...");
+          const swapSig = await connection.sendRawTransaction(signedSwap.serialize(), { skipPreflight: false, maxRetries: 3 });
+          await connection.confirmTransaction(swapSig, "confirmed");
+
+          depositAmount = swapData.outputAmount ?? usdcAmount;
+        } else {
+          // No swap route available — fall back to USDC vault
+          setTxStatus("No route to " + (activeVault?.uiSymbol ?? "") + ", using USDC...");
+          assetMint = KNOWN_MINTS.USDC;
+          depositAmount = usdcAmount;
         }
-        const swapData = await swapRes.json();
-        if (!swapData.swapTransaction) throw new Error("No swap transaction");
-
-        setTxStatus("Sign swap...");
-        const swapTx = VersionedTransaction.deserialize(Buffer.from(swapData.swapTransaction, "base64"));
-        const signedSwap = await signTransaction(swapTx);
-
-        setTxStatus("Sending swap...");
-        const swapSig = await connection.sendRawTransaction(signedSwap.serialize(), { skipPreflight: false, maxRetries: 3 });
-        await connection.confirmTransaction(swapSig, "confirmed");
-
-        // Use the output amount for the deposit
-        depositAmount = swapData.outputAmount ?? usdcAmount;
       }
 
       // 2. Build Lend deposit tx

@@ -38,13 +38,7 @@ export default function PredictPage() {
         setMarkets(parsed);
       })
       .catch(() => {
-        // Fallback sample markets
-        setMarkets([
-          { id: "1", title: "SOL above $100 by end of April?", yesPrice: 0.32, noPrice: 0.68, volume: 245000, endDate: "2026-04-30", category: "Crypto" },
-          { id: "2", title: "ETH flips SOL in daily volume this week?", yesPrice: 0.15, noPrice: 0.85, volume: 89000, endDate: "2026-04-14", category: "Crypto" },
-          { id: "3", title: "Jupiter TVL hits $5B in April?", yesPrice: 0.55, noPrice: 0.45, volume: 167000, endDate: "2026-04-30", category: "DeFi" },
-          { id: "4", title: "BTC new ATH before May?", yesPrice: 0.42, noPrice: 0.58, volume: 520000, endDate: "2026-05-01", category: "Crypto" },
-        ]);
+        setMarkets([]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -79,7 +73,7 @@ export default function PredictPage() {
           </div>
           <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
             <p className="text-xs text-text-dim uppercase tracking-wider">Idle yield</p>
-            <p className="text-sm font-semibold text-mint mt-1">~3-5% APY</p>
+            <p className="text-sm font-semibold text-mint mt-1">Variable APY</p>
           </div>
           <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
             <p className="text-xs text-text-dim uppercase tracking-wider">Currency</p>
@@ -204,11 +198,14 @@ export default function PredictPage() {
                 </div>
               </div>
 
-              <button className={`w-full py-2.5 rounded-lg font-semibold text-sm uppercase tracking-wide
-                ${side === "yes" ? "bg-green text-bg-base" : "bg-red text-white"}
-                shadow-[0_0_16px_rgba(73,231,178,0.1)]`}>
-                Bet {side.toUpperCase()} — ${capitalNum.toFixed(0)}
+              <button
+                disabled
+                className="w-full py-2.5 rounded-lg font-semibold text-sm uppercase tracking-wide
+                  bg-bg-inset border border-border text-text-dim cursor-not-allowed"
+              >
+                Coming Soon — Predict & Earn
               </button>
+              <p className="text-xs text-text-dim text-center">Prediction markets with yield on idle capital — launching soon</p>
             </div>
           </div>
         )}
