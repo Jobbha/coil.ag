@@ -43,7 +43,7 @@ export default function DashboardPage() {
     [signTransaction, connection],
   );
 
-  const { orders, addOrder, updateOrder } = useCoilEngine([], {
+  const { orders, addOrder, removeOrder, updateOrder } = useCoilEngine([], {
     walletAddress: publicKey?.toBase58() ?? null,
     signAndSend: signTransaction ? signAndSend : undefined,
   });
@@ -120,7 +120,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <PositionsPanel orders={orders} onUpdateOrder={updateOrder} />
+                  <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={removeOrder} />
                 </div>
               ) : (
                 <div className="animate-fadeIn space-y-5" key="tokenlist">
@@ -131,7 +131,7 @@ export default function DashboardPage() {
                   {orders.length > 0 && (
                     <>
                       <Portfolio orders={orders} />
-                      <PositionsPanel orders={orders} onUpdateOrder={updateOrder} />
+                      <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={removeOrder} />
                     </>
                   )}
                 </div>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
           {activeTab === "Orders" && (
             <div className="animate-fadeIn space-y-4">
               <Portfolio orders={orders} />
-              <PositionsPanel orders={orders} onUpdateOrder={updateOrder} />
+              <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={removeOrder} />
             </div>
           )}
 
