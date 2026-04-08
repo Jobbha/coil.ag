@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import PrivyAuthProvider from "@/components/PrivyAuthProvider";
+import AuthGate from "@/components/AuthGate";
 import WalletProvider from "@/components/WalletProvider";
 import "./globals.css";
 
@@ -42,9 +44,13 @@ export default function RootLayout({
           />
         </div>
 
-        <WalletProvider>
-          <div className="relative z-10 min-h-full flex flex-col">{children}</div>
-        </WalletProvider>
+        <PrivyAuthProvider>
+          <AuthGate>
+            <WalletProvider>
+              <div className="relative z-10 min-h-full flex flex-col">{children}</div>
+            </WalletProvider>
+          </AuthGate>
+        </PrivyAuthProvider>
       </body>
     </html>
   );

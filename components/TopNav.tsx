@@ -10,11 +10,10 @@ interface Props {
   onTabChange: (tab: string) => void;
 }
 
-const BASE_TABS = ["Spot", "Perps", "DCA", "Predict", "Yield", "Orders"];
+const TABS = ["Spot", "Perps", "DCA", "Predict", "Yield", "Orders", "Profile"];
 
 export default function TopNav({ activeTab, onTabChange }: Props) {
-  const { connected } = useWallet();
-  const tabs = connected ? [...BASE_TABS, "Profile"] : BASE_TABS;
+  const tabs = TABS;
 
   return (
     <nav className="flex items-center justify-between px-6 py-4 border-b border-border-subtle">

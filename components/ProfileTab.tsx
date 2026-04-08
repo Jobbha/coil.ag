@@ -1,12 +1,14 @@
 "use client";
 
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export default function ProfileTab() {
   const { publicKey, wallet, disconnect } = useWallet();
   const { connection } = useConnection();
+  const { logout: privyLogout, user: privyUser } = usePrivy();
   const [balance, setBalance] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -33,7 +35,18 @@ export default function ProfileTab() {
             <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
           </svg>
         </div>
-        <p className="text-base text-text-muted">Connect your wallet to view your profile</p>
+        <p className="text-base text-text-muted mb-2">Connect your wallet to view your profile</p>
+        {privyUser && (
+          <p className="text-sm text-text-dim mb-4">
+            Signed in as {privyUser.email?.address ?? privyUser.google?.email ?? privyUser.id}
+          </p>
+        )}
+        <button
+          onClick={() => privyLogout()}
+          className="px-4 py-2 rounded-lg text-sm font-medium border border-red/20 text-red hover:bg-red/5 transition-colors"
+        >
+          Log Out
+        </button>
       </div>
     );
   }
@@ -93,6 +106,26 @@ export default function ProfileTab() {
           </div>
         </div>
       </div>
+
+      {/* Privy Account */}
+      {privyUser && (
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Account</p>
+              <p className="text-sm text-text-primary font-mono">
+                {privyUser.email?.address ?? privyUser.google?.email ?? privyUser.id}
+              </p>
+            </div>
+            <button
+              onClick={() => privyLogout()}
+              className="px-3 py-2 rounded-lg text-sm font-medium border border-red/20 text-red hover:bg-red/5 transition-colors"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Balances + Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
