@@ -84,7 +84,7 @@ export default function YieldVaults() {
         </div>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
             <p className="text-xs text-text-dim uppercase tracking-wider">Vaults</p>
             <p className="text-base font-mono font-bold text-text-primary">{sorted.length}</p>

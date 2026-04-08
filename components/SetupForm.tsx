@@ -436,7 +436,7 @@ function InfoTip({ text }: { text: string }) {
       {show && (
         <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md
                          bg-bg-card border border-border shadow-card text-xs text-text-secondary
-                         whitespace-normal w-48 z-50 animate-fadeIn leading-relaxed pointer-events-none">
+                         whitespace-normal w-40 md:w-48 z-50 animate-fadeIn leading-relaxed pointer-events-none">
           {text}
         </span>
       )}

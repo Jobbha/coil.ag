@@ -72,34 +72,34 @@ export default function PositionsPanel({ orders, onCancelOrder }: Props) {
                   onClick={() => setExpandedId(isExpanded ? null : o.id)}
                   className="w-full flex items-center gap-0 px-4 py-2.5 text-left hover:bg-bg-card-hover transition-colors text-sm"
                 >
-                  <span className="w-[12%] font-mono text-blue">
+                  <span className="w-[20%] md:w-[12%] font-mono text-blue truncate">
                     {o.outputMint.slice(0, 4)}…{o.outputMint.slice(-4)}
                   </span>
-                  <span className="w-[14%]">
-                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-sm font-semibold ${cfg.bg} ${cfg.color}`}>
+                  <span className="w-[25%] md:w-[14%]">
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs md:text-sm font-semibold ${cfg.bg} ${cfg.color}`}>
                       {["LENDING", "APPROACHING", "PLACED"].includes(o.state) && (
                         <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                       )}
                       {cfg.label}
                     </span>
                   </span>
-                  <span className="w-[10%] font-mono text-text-primary">${o.targetPrice.toFixed(2)}</span>
-                  <span className="w-[10%] font-mono text-text-secondary">
+                  <span className="w-[15%] md:w-[10%] font-mono text-text-primary">${o.targetPrice.toFixed(2)}</span>
+                  <span className="hidden md:inline w-[10%] font-mono text-text-secondary">
                     {o.spotPrice !== null ? `$${o.spotPrice.toFixed(2)}` : "—"}
                   </span>
-                  <span className={`w-[8%] font-mono ${
+                  <span className={`hidden md:inline w-[8%] font-mono ${
                     o.distancePct !== null && Math.abs(o.distancePct) <= o.proximityThreshold
                       ? "text-yellow" : "text-text-secondary"
                   }`}>{dist}</span>
-                  <span className="w-[14%] font-mono">
+                  <span className="hidden md:inline w-[14%] font-mono">
                     <span className="text-green">${o.takeProfitPrice.toFixed(2)}</span>
                     <span className="text-text-dim mx-0.5">/</span>
                     <span className="text-red">${o.stopLossPrice.toFixed(2)}</span>
                   </span>
-                  <span className="w-[8%] font-mono text-text-primary">${(parseInt(o.capitalAmount) / 1e6).toFixed(0)}</span>
-                  <span className="w-[10%] font-mono text-mint">+${o.yieldEarned.toFixed(4)}</span>
-                  <span className="w-[8%] text-right text-text-dim">{formatAge(o.createdAt)}</span>
-                  <span className="w-[6%] text-right text-text-dim">
+                  <span className="hidden md:inline w-[8%] font-mono text-text-primary">${(parseInt(o.capitalAmount) / 1e6).toFixed(0)}</span>
+                  <span className="w-[20%] md:w-[10%] font-mono text-mint">+${o.yieldEarned.toFixed(4)}</span>
+                  <span className="w-[12%] md:w-[8%] text-right text-text-dim">{formatAge(o.createdAt)}</span>
+                  <span className="w-[8%] md:w-[6%] text-right text-text-dim">
                     <svg
                       width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
                       className={`inline transition-transform ${isExpanded ? "rotate-180" : ""}`}

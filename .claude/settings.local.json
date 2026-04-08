@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx skills:*)",
+      "Bash(npx next:*)",
+      "WebFetch(domain:developers.jup.ag)",
+      "WebFetch(domain:dev.jup.ag)",
+      "Bash(npx vercel:*)",
+      "WebFetch(domain:jup.ag)",
+      "Bash(npm info:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const lc = require\\('lightweight-charts'\\); console.log\\('version:', lc.version ?? 'unknown'\\); const keys = Object.keys\\(lc\\).filter\\(k => typeof lc[k] === 'function'\\); console.log\\(keys.join\\(', '\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('prices:', len\\(d.get\\('prices',[]\\)\\), 'points'\\); print\\('first:', d['prices'][0] if d.get\\('prices'\\) else 'none'\\); print\\('last:', d['prices'][-1] if d.get\\('prices'\\) else 'none'\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\)\\); console.log\\('prices:',d.prices?.length,'points'\\); if\\(d.prices?.length\\){console.log\\('first:',d.prices[0]\\); console.log\\('last:',d.prices[d.prices.length-1]\\); console.log\\('interval \\(min\\):', Math.round\\(\\(d.prices[1][0]-d.prices[0][0]\\)/60000\\)\\)}\")",
+      "Bash(node -e \"const d=require\\('/tmp/cg_test.json'\\); console.log\\('prices:',d.prices?.length,'points'\\); if\\(d.prices?.length\\){console.log\\('first:',d.prices[0]\\); console.log\\('last:',d.prices[d.prices.length-1]\\); console.log\\('interval \\(min\\):', Math.round\\(\\(d.prices[1][0]-d.prices[0][0]\\)/60000\\)\\)}\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const d=JSON.parse\\(fs.readFileSync\\('C:/Users/User/cg_test.json','utf8'\\)\\); console.log\\('prices:',d.prices?.length\\); if\\(d.prices?.length>1\\){console.log\\('interval_min:',Math.round\\(\\(d.prices[1][0]-d.prices[0][0]\\)/60000\\)\\); console.log\\('first:',d.prices[0]\\); console.log\\('last:',d.prices[d.prices.length-1]\\)}\")",
+      "WebFetch(domain:docs.coingecko.com)",
+      "Bash(node -e \"const fs=require\\('fs'\\); const d=JSON.parse\\(fs.readFileSync\\('C:/Users/User/gt_test.json','utf8'\\)\\); const list=d.data?.attributes?.ohlcv_list; console.log\\('candles:',list?.length\\); if\\(list?.length>1\\){console.log\\('first:',list[list.length-1]\\); console.log\\('last:',list[0]\\); console.log\\('interval_min:',Math.round\\(\\(list[0][0]-list[1][0]\\)/60\\)\\)}\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const raw=fs.readFileSync\\('C:/Users/User/gt_test.json','utf8'\\); console.log\\(raw.substring\\(0,500\\)\\)\")",
+      "Bash(node -e \"process.stdin.resume\\(\\); let d=''; process.stdin.on\\('data',c=>d+=c\\); process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\); const list=j.data?.attributes?.ohlcv_list; console.log\\('candles:',list?.length\\); if\\(list?.length>1\\){console.log\\('first:',list[list.length-1]\\); console.log\\('last:',list[0]\\); console.log\\('interval_sec:',\\(list[0][0]-list[1][0]\\)\\)}}\\)\")",
+      "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);const pools=j.data?.slice\\(0,3\\);pools?.forEach\\(p=>console.log\\(p.id, p.attributes?.name, 'vol:', p.attributes?.volume_usd?.h24\\)\\)}\\)\")",
+      "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);j.data?.slice\\(0,10\\).forEach\\(p=>console.log\\(p.attributes?.address, p.attributes?.name\\)\\)}\\)\")",
+      "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);j.data?.slice\\(0,5\\).forEach\\(p=>console.log\\(p.attributes?.address, p.attributes?.name, 'vol24h:', p.attributes?.volume_usd?.h24\\)\\)}\\)\")",
+      "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);const list=j.data?.attributes?.ohlcv_list;console.log\\('candles:',list?.length\\);if\\(list?.length\\){console.log\\('newest:',list[0]\\);console.log\\('oldest:',list[list.length-1]\\);const spanHrs=Math.round\\(\\(list[0][0]-list[list.length-1][0]\\)/3600\\);console.log\\('span:',spanHrs,'hours'\\)}}\\)\")"
+    ]
+  }
+}

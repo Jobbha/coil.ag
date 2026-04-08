@@ -201,8 +201,8 @@ export default function PriceChart({ mint, symbol, spotPrice, priceChange24h, ta
   return (
     <div className="glass-card overflow-hidden h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <div className="flex items-baseline gap-3">
+      <div className="flex items-center justify-between px-3 md:px-4 pt-3 pb-2 flex-wrap gap-2">
+        <div className="flex items-baseline gap-2 md:gap-3">
           <span className="text-sm font-medium text-text-secondary">${symbol} / USDC</span>
           {displayPrice > 0 && (
             <>
@@ -246,7 +246,7 @@ export default function PriceChart({ mint, symbol, spotPrice, priceChange24h, ta
       </div>
 
       {/* Chart */}
-      <div className="flex-1 min-h-[400px] relative">
+      <div className="flex-1 min-h-[280px] md:min-h-[400px] relative">
         <div ref={containerRef} className="w-full h-full" />
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-bg-card/50">

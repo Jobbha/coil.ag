@@ -46,7 +46,7 @@ export default function DCAPage({ prices, onPricesUpdate }: Props) {
               <p className="text-xs text-text-dim">Dollar-cost average with yield between slices via Jupiter Recurring + Lend</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
               <p className="text-xs text-text-dim uppercase tracking-wider">Powered by</p>
               <p className="text-sm font-semibold text-text-primary mt-1">Jupiter Recurring</p>

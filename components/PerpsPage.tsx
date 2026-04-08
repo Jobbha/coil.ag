@@ -44,7 +44,7 @@ export default function PerpsPage({ prices, onPricesUpdate }: Props) {
               <p className="text-xs text-text-dim">Open leveraged positions with yield on collateral via Jupiter Borrow + Lend</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div className="bg-bg-inset rounded-lg p-3 border border-border-subtle">
               <p className="text-xs text-text-dim uppercase tracking-wider">Powered by</p>
               <p className="text-sm font-semibold text-text-primary mt-1">Jupiter Borrow</p>

@@ -23,13 +23,13 @@ export default function TopNav({ activeTab, onTabChange }: Props) {
         <Image src="/coil-logo.png" alt="Coil" width={100} height={40} className="object-contain" priority />
       </div>
 
-      {/* Center nav tabs */}
-      <div className="hidden md:flex items-center bg-bg-inset rounded-xl p-1 gap-0.5">
+      {/* Center nav tabs — scrollable on mobile */}
+      <div className="flex items-center bg-bg-inset rounded-xl p-1 gap-0.5 overflow-x-auto max-w-[60%] md:max-w-none">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => onTabChange(tab)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 md:px-4 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
               activeTab === tab
                 ? "bg-mint text-white dark:text-bg-base"
                 : "text-text-secondary hover:text-text-primary"
