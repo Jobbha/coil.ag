@@ -58,8 +58,9 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
   const active = orders.filter((o) =>
     ["LENDING", "APPROACHING", "WITHDRAWING", "PLACED"].includes(o.state),
   );
+  // Only show history orders that were actually filled (not stale expired localStorage data)
   const history = orders.filter((o) =>
-    ["FILLED", "EXPIRED", "ERROR"].includes(o.state),
+    o.state === "FILLED",
   );
   // Count on-chain lend positions as active
   const totalActive = active.length + lendPositions.length;
@@ -87,6 +88,18 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
         <div>
           {lendPositions.map((pos) => {
             const dailyYield = pos.estimatedUsd * (pos.apy / 100) / 365;
+            // Try to find matching localStorage order for limit price metadata
+            const matchingOrder = orders.find((o) =>
+              o.yieldMint === pos.mint && ["LENDING", "APPROACHING"].includes(o.state)
+            );
+            const targetPrice = matchingOrder?.targetPrice;
+            const outputSymbol = matchingOrder?.outputMint
+              ? matchingOrder.outputMint.slice(0, 4) + "..."
+              : null;
+            const waitingText = targetPrice
+              ? `Limit order @ $${targetPrice.toFixed(2)}`
+              : "Earning yield on idle capital";
+
             return (
               <div key={pos.mint} className="border-t border-border-subtle px-4 py-3">
                 {/* Mobile */}
@@ -115,22 +128,22 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                       <span className="text-mint font-mono">~${dailyYield.toFixed(4)}/day</span>
                     </div>
                   </div>
-                  <p className="text-xs text-text-dim">Waiting for limit order to trigger</p>
+                  <p className="text-xs text-yellow font-medium">{waitingText}</p>
                 </div>
                 {/* Desktop */}
                 <div className="hidden md:flex items-center text-sm">
                   <span className="w-[12%] font-semibold text-text-primary">{pos.jlSymbol}</span>
-                  <span className="w-[14%]">
+                  <span className="w-[12%]">
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
                       <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
-                      Earning Yield
+                      Earning
                     </span>
                   </span>
                   <span className="w-[14%] font-mono text-text-primary">{pos.uiAmount.toFixed(4)} {pos.symbol}</span>
                   <span className="w-[10%] font-mono text-text-secondary">${pos.estimatedUsd.toFixed(2)}</span>
-                  <span className="w-[10%] font-mono text-mint">{pos.apy.toFixed(2)}%</span>
+                  <span className="w-[8%] font-mono text-mint">{pos.apy.toFixed(2)}%</span>
                   <span className="w-[14%] font-mono text-mint">~${dailyYield.toFixed(4)}/day</span>
-                  <span className="w-[26%] text-text-dim text-xs">Waiting for limit order to trigger</span>
+                  <span className="w-[30%] text-yellow text-sm font-medium">{waitingText}</span>
                 </div>
               </div>
             );

@@ -284,12 +284,18 @@ export function useCoilEngine(initialOrders: CoilOrder[], options?: EngineOption
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  // Load from localStorage after mount
+  // Load from localStorage after mount, auto-clean stale expired orders
   useEffect(() => {
     if (!hydrated.current) {
       hydrated.current = true;
       const saved = loadOrders();
-      if (saved.length > 0) setOrders(saved);
+      // Remove expired/error orders older than 1 hour (stale data)
+      const cleaned = saved.filter((o) => {
+        if (["EXPIRED", "ERROR"].includes(o.state) && Date.now() - o.updatedAt > 3_600_000) return false;
+        return true;
+      });
+      if (cleaned.length !== saved.length) saveOrders(cleaned);
+      if (cleaned.length > 0) setOrders(cleaned);
     }
   }, []);
 
