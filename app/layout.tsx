@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import ConvexProvider from "@/components/ConvexProvider";
 import PrivyAuthProvider from "@/components/PrivyAuthProvider";
 import WalletProvider from "@/components/WalletProvider";
 import WalletAutoConnect from "@/components/WalletAutoConnect";
@@ -45,12 +46,14 @@ export default function RootLayout({
           />
         </div>
 
-        <PrivyAuthProvider>
-          <WalletProvider>
-            <WalletAutoConnect />
-            <div className="relative z-10 min-h-full flex flex-col">{children}</div>
-          </WalletProvider>
-        </PrivyAuthProvider>
+        <ConvexProvider>
+          <PrivyAuthProvider>
+            <WalletProvider>
+              <WalletAutoConnect />
+              <div className="relative z-10 min-h-full flex flex-col">{children}</div>
+            </WalletProvider>
+          </PrivyAuthProvider>
+        </ConvexProvider>
         <Analytics />
       </body>
     </html>
