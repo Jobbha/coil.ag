@@ -1,6 +1,14 @@
 "use client";
 
+import { useState } from "react";
+
 export default function Hero({ onGetStarted }: { onGetStarted?: () => void }) {
+  const [calcAmount, setCalcAmount] = useState("10000");
+  const [calcDays, setCalcDays] = useState("14");
+  const amt = parseFloat(calcAmount) || 0;
+  const days = parseFloat(calcDays) || 0;
+  const yield5 = (amt * 0.05 * days) / 365;
+  const yield8 = (amt * 0.08 * days) / 365;
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border-subtle bg-gradient-to-br from-bg-card via-bg-shell to-bg-card p-5 md:p-8">
       <div className="absolute -top-20 -right-20 w-72 h-72 bg-mint/5 rounded-full blur-3xl pointer-events-none" />
@@ -38,13 +46,42 @@ export default function Hero({ onGetStarted }: { onGetStarted?: () => void }) {
           </div>
         </div>
 
+        {/* Yield calculator */}
+        <div className="flex items-center justify-center gap-2 flex-wrap text-sm">
+          <span className="text-text-dim">If I place a</span>
+          <div className="flex items-center gap-1 bg-bg-inset border border-border rounded-lg px-2 py-1">
+            <span className="text-text-dim">$</span>
+            <input
+              type="number"
+              value={calcAmount}
+              onChange={(e) => setCalcAmount(e.target.value)}
+              className="w-20 bg-transparent text-text-primary font-mono font-bold text-center outline-none"
+            />
+          </div>
+          <span className="text-text-dim">order waiting</span>
+          <div className="flex items-center gap-1 bg-bg-inset border border-border rounded-lg px-2 py-1">
+            <input
+              type="number"
+              value={calcDays}
+              onChange={(e) => setCalcDays(e.target.value)}
+              className="w-10 bg-transparent text-text-primary font-mono font-bold text-center outline-none"
+            />
+            <span className="text-text-dim">days</span>
+          </div>
+        </div>
+        {amt > 0 && days > 0 && (
+          <p className="text-lg font-bold font-mono text-mint">
+            I earn ${yield5.toFixed(2)} – ${yield8.toFixed(2)} for free
+          </p>
+        )}
+
         {onGetStarted && (
           <button
             onClick={onGetStarted}
             className="px-8 py-3 rounded-xl bg-mint text-bg-base font-semibold text-sm uppercase tracking-wide
                        hover:bg-mint-dark transition-colors shadow-[0_0_20px_var(--mint-glow)] animate-mintPulse"
           >
-            Pick a token to start
+            Start earning
           </button>
         )}
       </div>

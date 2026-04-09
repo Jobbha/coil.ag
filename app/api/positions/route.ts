@@ -127,7 +127,9 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    return NextResponse.json(positions);
+    return NextResponse.json(positions, {
+      headers: { "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30" },
+    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: msg }, { status: 502 });
