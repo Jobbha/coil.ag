@@ -25,9 +25,12 @@ const STATE_STYLE: Record<CoilState, { label: string; color: string; bg: string 
 
 interface LendPosition {
   mint: string;
-  symbol?: string;
+  jlSymbol: string;
+  symbol: string;
+  assetMint: string;
   amount: string;
-  value_usd: number;
+  uiAmount: number;
+  estimatedUsd: number;
   apy: number;
 }
 
@@ -37,18 +40,18 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [lendPositions, setLendPositions] = useState<LendPosition[]>([]);
 
-  // Fetch real on-chain Lend positions
+  // Fetch real on-chain jlToken balances (direct RPC, not Jupiter API)
   useEffect(() => {
     if (!publicKey) return;
     const addr = publicKey.toBase58();
     function fetchPositions() {
-      fetch(`/api/lend?action=positions&wallet=${addr}`)
+      fetch(`/api/positions?wallet=${addr}`)
         .then((r) => r.json())
         .then((data) => { if (Array.isArray(data)) setLendPositions(data); })
         .catch(() => {});
     }
     fetchPositions();
-    const iv = setInterval(fetchPositions, 30_000);
+    const iv = setInterval(fetchPositions, 15_000);
     return () => clearInterval(iv);
   }, [publicKey]);
 
@@ -205,40 +208,42 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               <div className="md:hidden space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm text-blue">{pos.mint.slice(0, 6)}...{pos.mint.slice(-4)}</span>
+                    <span className="font-semibold text-sm text-text-primary">{pos.jlSymbol}</span>
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
                       <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                       Earning
                     </span>
                   </div>
+                  <span className="text-mint text-xs font-mono">{pos.apy?.toFixed(2) ?? "—"}% APY</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <span className="text-text-dim block">Amount</span>
-                    <span className="text-text-primary font-mono">{parseFloat(pos.amount).toFixed(4)}</span>
+                    <span className="text-text-primary font-mono">{pos.uiAmount.toFixed(4)} {pos.symbol}</span>
                   </div>
                   <div>
                     <span className="text-text-dim block">Value</span>
-                    <span className="text-text-primary font-mono">${pos.value_usd.toFixed(2)}</span>
+                    <span className="text-text-primary font-mono">${pos.estimatedUsd.toFixed(2)}</span>
                   </div>
                   <div>
-                    <span className="text-text-dim block">APY</span>
-                    <span className="text-mint font-mono">{pos.apy?.toFixed(2) ?? "—"}%</span>
+                    <span className="text-text-dim block">Earning</span>
+                    <span className="text-mint font-mono">~${(pos.estimatedUsd * (pos.apy / 100) / 365).toFixed(4)}/day</span>
                   </div>
                 </div>
               </div>
               {/* Desktop */}
               <div className="hidden md:flex items-center gap-3 text-sm">
-                <span className="w-[20%] font-mono text-blue truncate">{pos.mint.slice(0, 6)}...{pos.mint.slice(-4)}</span>
-                <span className="w-[20%]">
+                <span className="w-[15%] font-semibold text-text-primary">{pos.jlSymbol}</span>
+                <span className="w-[15%]">
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
                     <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                     Earning
                   </span>
                 </span>
-                <span className="w-[20%] font-mono text-text-primary">{parseFloat(pos.amount).toFixed(4)}</span>
-                <span className="w-[15%] font-mono text-text-secondary">${pos.value_usd.toFixed(2)}</span>
+                <span className="w-[20%] font-mono text-text-primary">{pos.uiAmount.toFixed(4)} {pos.symbol}</span>
+                <span className="w-[15%] font-mono text-text-secondary">${pos.estimatedUsd.toFixed(2)}</span>
                 <span className="w-[15%] font-mono text-mint">{pos.apy?.toFixed(2) ?? "—"}% APY</span>
+                <span className="w-[20%] font-mono text-mint">~${(pos.estimatedUsd * (pos.apy / 100) / 365).toFixed(4)}/day</span>
               </div>
             </div>
           ))}
