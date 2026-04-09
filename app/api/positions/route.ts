@@ -52,6 +52,23 @@ export async function GET(req: NextRequest) {
       jlLookup.set(token.jlMint, token);
     }
 
+    // Fetch jlToken prices from Jupiter Price API for accurate USD values
+    const jlMintList = [...jlLookup.keys()].join(",");
+    let jlPrices: Record<string, number> = {};
+    try {
+      const priceRes = await fetch(`https://api.jup.ag/price/v3?ids=${jlMintList}`, {
+        headers: { "Content-Type": "application/json" },
+      });
+      if (priceRes.ok) {
+        const priceData = await priceRes.json();
+        for (const [mint, info] of Object.entries(priceData)) {
+          if (info && typeof info === "object" && "usdPrice" in info) {
+            jlPrices[mint] = (info as { usdPrice: number }).usdPrice;
+          }
+        }
+      }
+    } catch { /* silent */ }
+
     // Also fetch vault APYs from Jupiter Lend
     let vaultApys: Record<string, number> = {};
     try {
@@ -88,9 +105,9 @@ export async function GET(req: NextRequest) {
       const rawAmount = parsed.tokenAmount?.amount ?? "0";
       const apy = vaultApys[jlInfo.assetMint] ?? 0;
 
-      // jlTokens appreciate over time — the USD value is approximately the amount
-      // (since they're stablecoin-backed). For precise value we'd need the exchange rate.
-      const estimatedUsd = amount; // 1 jlUSDC ≈ 1 USDC (slight premium from yield)
+      // Use real jlToken price if available, otherwise approximate
+      const jlPrice = jlPrices[mint];
+      const estimatedUsd = jlPrice ? amount * jlPrice : amount;
 
       positions.push({
         mint,
