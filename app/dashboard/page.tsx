@@ -123,17 +123,11 @@ export default function DashboardPage() {
                   <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={removeOrder} />
                 </div>
               ) : (
-                <div className="animate-fadeIn space-y-5" key="tokenlist">
+                <div className="animate-fadeIn space-y-4" key="tokenlist">
                   <Hero onGetStarted={() => tokenListRef.current?.scrollIntoView({ behavior: "smooth" })} />
                   <div ref={tokenListRef}>
                     <TokenList onSelect={handleTokenSelect} prices={prices} onPricesUpdate={setPrices} />
                   </div>
-                  {orders.length > 0 && (
-                    <>
-                      <Portfolio orders={orders} />
-                      <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={removeOrder} />
-                    </>
-                  )}
                 </div>
               )}
             </div>
