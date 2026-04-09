@@ -49,6 +49,14 @@ export default function TopNav({ activeTab, onTabChange }: Props) {
 
       {/* Right controls */}
       <div className="flex items-center gap-2.5">
+        <a
+          href="https://docs.coil.ag"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-sm text-text-secondary hover:text-mint transition-colors"
+        >
+          Docs
+        </a>
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-inset border border-border text-sm text-text-secondary">
           <div className="w-4 h-4 rounded-full bg-gradient-to-br from-purple-500 to-teal-400" />
           Solana

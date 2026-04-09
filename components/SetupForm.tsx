@@ -582,6 +582,8 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
           <InfoRow label="Order type" value={takeProfit || stopLoss ? "OTOCO (with TP/SL)" : "Limit"} />
           <InfoRow label="Flow" value={activeVault ? `${activeVault.uiSymbol} → jl${activeVault.uiSymbol} → ${token.symbol}` : "Direct"} />
           <InfoRow label="Exit" value="1 tx via Jupiter routing" />
+          <InfoRow label="Swap fee" value="0.1%" />
+          <InfoRow label="Yield fee" value="8% of earned yield" />
           <InfoRow label="Min. trade" value="$10" />
         </div>
       )}
