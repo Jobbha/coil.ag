@@ -61,6 +61,8 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
   const history = orders.filter((o) =>
     ["FILLED", "EXPIRED", "ERROR"].includes(o.state),
   );
+  // Count on-chain lend positions as active
+  const totalActive = active.length + lendPositions.length;
   const totalYield = orders.reduce((s, o) => s + o.yieldEarned, 0);
   const displayOrders = tab === "active" ? active : history;
 
@@ -69,7 +71,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-3 pb-0 border-b border-border-subtle">
         <div className="flex items-center gap-4">
-          <TabBtn label={`Active (${active.length})`} active={tab === "active"} onClick={() => setTab("active")} />
+          <TabBtn label={`Active (${totalActive})`} active={tab === "active"} onClick={() => setTab("active")} />
           <TabBtn label={`History (${history.length})`} active={tab === "history"} onClick={() => setTab("history")} />
         </div>
         {totalYield > 0 && (
@@ -80,7 +82,63 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
       </div>
 
       {/* Table */}
-      {displayOrders.length === 0 ? (
+      {/* On-chain Lend positions as active trades */}
+      {tab === "active" && lendPositions.length > 0 && (
+        <div>
+          {lendPositions.map((pos) => {
+            const dailyYield = pos.estimatedUsd * (pos.apy / 100) / 365;
+            return (
+              <div key={pos.mint} className="border-t border-border-subtle px-4 py-3">
+                {/* Mobile */}
+                <div className="md:hidden space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-text-primary">{pos.jlSymbol}</span>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
+                        <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                        Earning Yield
+                      </span>
+                    </div>
+                    <span className="text-mint text-xs font-mono font-bold">{pos.apy.toFixed(2)}% APY</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <span className="text-text-dim block">Capital</span>
+                      <span className="text-text-primary font-mono">{pos.uiAmount.toFixed(2)} {pos.symbol}</span>
+                    </div>
+                    <div>
+                      <span className="text-text-dim block">Value</span>
+                      <span className="text-text-primary font-mono">${pos.estimatedUsd.toFixed(2)}</span>
+                    </div>
+                    <div>
+                      <span className="text-text-dim block">Earning</span>
+                      <span className="text-mint font-mono">~${dailyYield.toFixed(4)}/day</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-dim">Waiting for limit order to trigger</p>
+                </div>
+                {/* Desktop */}
+                <div className="hidden md:flex items-center text-sm">
+                  <span className="w-[12%] font-semibold text-text-primary">{pos.jlSymbol}</span>
+                  <span className="w-[14%]">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
+                      <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
+                      Earning Yield
+                    </span>
+                  </span>
+                  <span className="w-[14%] font-mono text-text-primary">{pos.uiAmount.toFixed(4)} {pos.symbol}</span>
+                  <span className="w-[10%] font-mono text-text-secondary">${pos.estimatedUsd.toFixed(2)}</span>
+                  <span className="w-[10%] font-mono text-mint">{pos.apy.toFixed(2)}%</span>
+                  <span className="w-[14%] font-mono text-mint">~${dailyYield.toFixed(4)}/day</span>
+                  <span className="w-[26%] text-text-dim text-xs">Waiting for limit order to trigger</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {displayOrders.length === 0 && (tab !== "active" || lendPositions.length === 0) && (
         <div className="py-8 text-center">
           <p className="text-sm text-text-dim">
             {tab === "active"
@@ -88,7 +146,9 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               : "No completed orders yet."}
           </p>
         </div>
-      ) : (
+      )}
+
+      {displayOrders.length > 0 && (
         <div className="overflow-x-auto">
           {displayOrders.map((o) => {
             const isExpanded = expandedId === o.id;
@@ -195,12 +255,12 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
         </div>
       )}
 
-      {/* On-chain Lend positions */}
-      {lendPositions.length > 0 && (
+      {/* On-chain Lend positions — shown only on History tab as reference */}
+      {tab === "history" && lendPositions.length > 0 && (
         <div className="border-t border-border-subtle">
           <div className="px-4 py-2 flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
-            <span className="text-xs text-text-dim uppercase tracking-wider font-medium">On-Chain Lend Positions</span>
+            <span className="text-xs text-text-dim uppercase tracking-wider font-medium">Active Lend Positions</span>
           </div>
           {lendPositions.map((pos) => (
             <div key={pos.mint} className="px-4 py-2.5 border-t border-border-subtle">
