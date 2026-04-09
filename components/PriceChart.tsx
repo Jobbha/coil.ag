@@ -58,7 +58,10 @@ export default function PriceChart({ mint, symbol, spotPrice, priceChange24h, ta
     const textColor = isDark ? "#646C6F" : "#999";
     const gridColor = isDark ? "#1A1F20" : "#E5E5E5";
 
+    const rect = containerRef.current.getBoundingClientRect();
     const chart = createChart(containerRef.current, {
+      width: rect.width || containerRef.current.clientWidth || 300,
+      height: rect.height || containerRef.current.clientHeight || 300,
       layout: {
         background: { type: ColorType.Solid, color: bgColor },
         textColor,
@@ -247,7 +250,7 @@ export default function PriceChart({ mint, symbol, spotPrice, priceChange24h, ta
 
       {/* Chart */}
       <div className="flex-1 min-h-[280px] md:min-h-[400px] relative">
-        <div ref={containerRef} className="w-full h-full" />
+        <div ref={containerRef} className="absolute inset-0" />
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-bg-card/50">
             <div className="w-5 h-5 border-2 border-mint/30 border-t-mint rounded-full animate-spin" />
