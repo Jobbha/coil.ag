@@ -18,28 +18,33 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Get all token accounts for this wallet
-    const rpcRes = await fetch(HELIUS_RPC, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "getTokenAccountsByOwner",
-        params: [
-          wallet,
-          { programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" },
-          { encoding: "jsonParsed" },
-        ],
+    // Get token accounts from BOTH SPL Token and Token-2022 programs
+    const [splRes, t22Res] = await Promise.all([
+      fetch(HELIUS_RPC, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0", id: 1, method: "getTokenAccountsByOwner",
+          params: [wallet, { programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" }, { encoding: "jsonParsed" }],
+        }),
       }),
-    });
+      fetch(HELIUS_RPC, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0", id: 2, method: "getTokenAccountsByOwner",
+          params: [wallet, { programId: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb" }, { encoding: "jsonParsed" }],
+        }),
+      }),
+    ]);
 
-    if (!rpcRes.ok) {
+    if (!splRes.ok && !t22Res.ok) {
       return NextResponse.json({ error: "RPC request failed" }, { status: 502 });
     }
 
-    const rpcData = await rpcRes.json();
-    const accounts = rpcData.result?.value ?? [];
+    const splData = splRes.ok ? await splRes.json() : { result: { value: [] } };
+    const t22Data = t22Res.ok ? await t22Res.json() : { result: { value: [] } };
+    const accounts = [...(splData.result?.value ?? []), ...(t22Data.result?.value ?? [])];
 
     // Build jlMint lookup
     const jlLookup = new Map<string, { symbol: string; jlSymbol: string; assetMint: string; decimals: number }>();
