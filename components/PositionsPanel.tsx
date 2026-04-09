@@ -111,13 +111,16 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               setWithdrawing(true);
               setWithdrawStatus("Building withdraw...");
               try {
+                // Withdraw full amount — use underlying amount (larger than jlToken amount)
+                // Round up to ensure we capture all yield
+                const underlyingSmallest = Math.ceil(pos.underlyingAmount * Math.pow(10, 6)).toString();
                 const res = await fetch("/api/lend", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     action: "withdraw",
                     asset: pos.assetMint,
-                    amount: pos.amount,
+                    amount: underlyingSmallest,
                     signer: posWallet.toBase58(),
                   }),
                 });
