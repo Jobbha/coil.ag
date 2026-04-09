@@ -100,12 +100,24 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
   const estDailyYield = (capitalNum * (vaultApy / 100)) / 365;
   const targetDist = spotPrice && targetPrice ? ((spotPrice - parseFloat(targetPrice)) / spotPrice) * 100 : 0;
 
+  // Auto-adjust threshold if price distance is too small
+  const priceDist = Math.abs(targetDist);
+  const thresholdNum = parseFloat(threshold) || 3;
+  const thresholdTooWide = priceDist > 0 && thresholdNum >= priceDist;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     // If wallet not connected, open wallet modal
     if (!connected || !publicKey || !signTransaction) {
       setVisible(true);
+      return;
+    }
+
+    // Validate threshold vs price distance
+    if (thresholdTooWide) {
+      setTxStatus(`Threshold (${thresholdNum}%) must be less than price distance (${priceDist.toFixed(1)}%)`);
+      setTimeout(() => setTxStatus(""), 5000);
       return;
     }
 
@@ -524,21 +536,26 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
       )}
 
       {/* Threshold */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-text-muted flex items-center gap-1.5">Trigger threshold <InfoTip text="When spot price is within this % of your target, capital is withdrawn from Lend and the limit order is placed on Jupiter Trigger." /></span>
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            step="0.1"
-            min="0.5"
-            max="20"
-            value={threshold}
-            onChange={(e) => setThreshold(e.target.value)}
-            required
-            className="w-14 text-center bg-bg-inset border border-border rounded-md px-2 py-1 text-sm font-mono"
-          />
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-text-muted flex items-center gap-1.5">Trigger threshold <InfoTip text="When spot price is within this % of your target, capital is withdrawn from Lend and the limit order is placed. Must be less than your price distance." /></span>
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              step="0.1"
+              min="0.1"
+              max="20"
+              value={threshold}
+              onChange={(e) => setThreshold(e.target.value)}
+              required
+              className={`w-14 text-center bg-bg-inset border rounded-md px-2 py-1 text-sm font-mono ${thresholdTooWide ? "border-red text-red" : "border-border"}`}
+            />
           <span className="text-sm text-text-muted">%</span>
+          </div>
         </div>
+        {thresholdTooWide && (
+          <p className="text-xs text-red mt-1">Must be less than {priceDist.toFixed(1)}% (your price distance)</p>
+        )}
       </div>
 
       {/* More info */}

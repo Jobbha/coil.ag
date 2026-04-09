@@ -131,23 +131,50 @@ async function autoExecuteSwap(
     const jlToken = order.yieldMint ? { jlMint: order.yieldMint } : getJlToken(order.inputMint);
     const inputMint = jlToken?.jlMint ?? order.inputMint;
 
-    const qs = new URLSearchParams({
+    // First try: direct jlToken → target swap
+    let qs = new URLSearchParams({
       inputMint,
       outputMint: order.outputMint,
       amount: order.capitalAmount,
       taker: walletAddress,
-      slippageBps: "100",
+      slippageBps: "150",
     });
 
-    const res = await fetch(`/api/swap-quote?${qs}`);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return { success: false, error: err.error || `Swap quote failed (${res.status})` };
+    let res = await fetch(`/api/swap-quote?${qs}`);
+    let data = res.ok ? await res.json() : null;
+
+    // If direct route fails, try two-step: jlToken → USDC → target
+    if (!data?.swapTransaction && inputMint !== order.inputMint) {
+      // Step 1: jlToken → USDC
+      const step1Qs = new URLSearchParams({
+        inputMint,
+        outputMint: order.inputMint,
+        amount: order.capitalAmount,
+        taker: walletAddress,
+        slippageBps: "100",
+      });
+      const step1Res = await fetch(`/api/swap-quote?${step1Qs}`);
+      const step1Data = step1Res.ok ? await step1Res.json() : null;
+
+      if (step1Data?.swapTransaction) {
+        await signAndSend(step1Data.swapTransaction);
+
+        // Step 2: USDC → target
+        const usdcAmount = step1Data.outputAmount ?? order.capitalAmount;
+        qs = new URLSearchParams({
+          inputMint: order.inputMint,
+          outputMint: order.outputMint,
+          amount: usdcAmount,
+          taker: walletAddress,
+          slippageBps: "150",
+        });
+        res = await fetch(`/api/swap-quote?${qs}`);
+        data = res.ok ? await res.json() : null;
+      }
     }
 
-    const data = await res.json();
-    if (!data.swapTransaction) {
-      return { success: false, error: "No swap transaction returned" };
+    if (!data?.swapTransaction) {
+      return { success: false, error: "No swap route available" };
     }
 
     await signAndSend(data.swapTransaction);
@@ -289,9 +316,9 @@ export function useCoilEngine(initialOrders: CoilOrder[], options?: EngineOption
     if (!hydrated.current) {
       hydrated.current = true;
       const saved = loadOrders();
-      // Remove expired/error orders older than 1 hour (stale data)
+      // Remove expired/error orders older than 10 minutes (stale data)
       const cleaned = saved.filter((o) => {
-        if (["EXPIRED", "ERROR"].includes(o.state) && Date.now() - o.updatedAt > 3_600_000) return false;
+        if (["EXPIRED", "ERROR"].includes(o.state) && Date.now() - o.updatedAt > 600_000) return false;
         return true;
       });
       if (cleaned.length !== saved.length) saveOrders(cleaned);
