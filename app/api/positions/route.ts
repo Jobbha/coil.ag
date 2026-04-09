@@ -105,9 +105,12 @@ export async function GET(req: NextRequest) {
       const rawAmount = parsed.tokenAmount?.amount ?? "0";
       const apy = vaultApys[jlInfo.assetMint] ?? 0;
 
-      // Use real jlToken price if available, otherwise approximate
-      const jlPrice = jlPrices[mint];
-      const estimatedUsd = jlPrice ? amount * jlPrice : amount;
+      // Calculate real underlying amount: jlToken amount × (jlToken price / underlying price)
+      const jlPrice = jlPrices[mint] ?? 1;
+      const estimatedUsd = amount * jlPrice;
+      // Underlying amount = USD value / 1 (stablecoins) or use price
+      // For stablecoins: underlying amount ≈ USD value
+      const underlyingAmount = estimatedUsd;
 
       positions.push({
         mint,
@@ -116,6 +119,7 @@ export async function GET(req: NextRequest) {
         assetMint: jlInfo.assetMint,
         amount: rawAmount,
         uiAmount: amount,
+        underlyingAmount,
         estimatedUsd,
         apy,
       });

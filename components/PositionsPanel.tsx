@@ -30,6 +30,7 @@ interface LendPosition {
   assetMint: string;
   amount: string;
   uiAmount: number;
+  underlyingAmount: number;
   estimatedUsd: number;
   apy: number;
 }
@@ -154,7 +155,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                 <div className="md:hidden space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-text-primary">{pos.jlSymbol}</span>
+                      <span className="font-semibold text-sm text-text-primary">{pos.symbol}</span>
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
                         <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                         Earning Yield
@@ -165,7 +166,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
                       <span className="text-text-dim block">Capital</span>
-                      <span className="text-text-primary font-mono">{pos.uiAmount.toFixed(2)} {pos.symbol}</span>
+                      <span className="text-text-primary font-mono">{pos.underlyingAmount.toFixed(2)} {pos.symbol}</span>
                     </div>
                     <div>
                       <span className="text-text-dim block">Value</span>
@@ -180,14 +181,14 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                 </div>
                 {/* Desktop */}
                 <div className="hidden md:flex items-center text-sm">
-                  <span className="w-[12%] font-semibold text-text-primary">{pos.jlSymbol}</span>
+                  <span className="w-[12%] font-semibold text-text-primary">{pos.symbol}</span>
                   <span className="w-[12%]">
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
                       <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                       Earning
                     </span>
                   </span>
-                  <span className="w-[14%] font-mono text-text-primary">{pos.uiAmount.toFixed(4)} {pos.symbol}</span>
+                  <span className="w-[14%] font-mono text-text-primary">{pos.underlyingAmount.toFixed(4)} {pos.symbol}</span>
                   <span className="w-[10%] font-mono text-text-secondary">${pos.estimatedUsd.toFixed(2)}</span>
                   <span className="w-[8%] font-mono text-mint">{pos.apy.toFixed(2)}%</span>
                   <span className="w-[14%] font-mono text-mint">~${dailyYield.toFixed(4)}/day</span>
@@ -210,7 +211,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                         <div className="space-y-1.5 text-sm">
                           <div className="flex justify-between">
                             <span className="text-text-dim">Token</span>
-                            <span className="text-text-primary font-mono">{pos.jlSymbol}</span>
+                            <span className="text-text-primary font-mono">{pos.symbol}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-text-dim">Underlying</span>
@@ -218,7 +219,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                           </div>
                           <div className="flex justify-between">
                             <span className="text-text-dim">Amount</span>
-                            <span className="text-text-primary font-mono">{pos.uiAmount.toFixed(6)}</span>
+                            <span className="text-text-primary font-mono">{pos.underlyingAmount.toFixed(6)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-text-dim">Value</span>
@@ -410,7 +411,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               <div className="md:hidden space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-text-primary">{pos.jlSymbol}</span>
+                    <span className="font-semibold text-sm text-text-primary">{pos.symbol}</span>
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
                       <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                       Earning
@@ -421,7 +422,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <span className="text-text-dim block">Amount</span>
-                    <span className="text-text-primary font-mono">{pos.uiAmount.toFixed(4)} {pos.symbol}</span>
+                    <span className="text-text-primary font-mono">{pos.underlyingAmount.toFixed(4)} {pos.symbol}</span>
                   </div>
                   <div>
                     <span className="text-text-dim block">Value</span>
@@ -435,14 +436,14 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               </div>
               {/* Desktop */}
               <div className="hidden md:flex items-center gap-3 text-sm">
-                <span className="w-[15%] font-semibold text-text-primary">{pos.jlSymbol}</span>
+                <span className="w-[15%] font-semibold text-text-primary">{pos.symbol}</span>
                 <span className="w-[15%]">
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-green/10 text-green">
                     <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                     Earning
                   </span>
                 </span>
-                <span className="w-[20%] font-mono text-text-primary">{pos.uiAmount.toFixed(4)} {pos.symbol}</span>
+                <span className="w-[20%] font-mono text-text-primary">{pos.underlyingAmount.toFixed(4)} {pos.symbol}</span>
                 <span className="w-[15%] font-mono text-text-secondary">${pos.estimatedUsd.toFixed(2)}</span>
                 <span className="w-[15%] font-mono text-mint">{pos.apy?.toFixed(2) ?? "—"}% APY</span>
                 <span className="w-[20%] font-mono text-mint">~${(pos.estimatedUsd * (pos.apy / 100) / 365).toFixed(4)}/day</span>
