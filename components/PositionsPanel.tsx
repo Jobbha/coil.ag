@@ -45,7 +45,19 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
   const [lendPositions, setLendPositions] = useState<LendPosition[]>([]);
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawStatus, setWithdrawStatus] = useState("");
-  const [closedPositions, setClosedPositions] = useState<(LendPosition & { closedAt: number })[]>([]);
+  const [closedPositions, setClosedPositions] = useState<(LendPosition & { closedAt: number })[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem("coil-closed-positions");
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+
+  // Persist closed positions
+  useEffect(() => {
+    try { localStorage.setItem("coil-closed-positions", JSON.stringify(closedPositions)); }
+    catch { /* */ }
+  }, [closedPositions]);
 
   // Fetch real on-chain jlToken balances (direct RPC, not Jupiter API)
   useEffect(() => {
