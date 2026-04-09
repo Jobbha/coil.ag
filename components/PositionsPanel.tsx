@@ -107,14 +107,13 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
         <div>
           {lendPositions.map((pos) => {
             const dailyYield = pos.estimatedUsd * (pos.apy / 100) / 365;
-            // Try to find matching localStorage order for limit price metadata
+            // Match order: try exact yieldMint match, then any active order for this wallet
             const matchingOrder = orders.find((o) =>
               o.yieldMint === pos.mint && ["LENDING", "APPROACHING"].includes(o.state)
+            ) ?? orders.find((o) =>
+              ["LENDING", "APPROACHING"].includes(o.state)
             );
             const targetPrice = matchingOrder?.targetPrice;
-            const outputSymbol = matchingOrder?.outputMint
-              ? matchingOrder.outputMint.slice(0, 4) + "..."
-              : null;
             const waitingText = targetPrice
               ? `Limit order @ $${targetPrice.toFixed(2)}`
               : "Earning yield on idle capital";
