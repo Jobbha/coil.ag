@@ -16,8 +16,10 @@ export default function PrivyAuthProvider({ children }: { children: ReactNode })
           accentColor: "#49E7B2",
           logo: "/coil-logo.png",
           walletChainType: "solana-only",
+          showWalletLoginFirst: true,
+          walletList: ["phantom", "solflare", "detected_wallets"],
         },
-        loginMethods: ["email", "google", "wallet"],
+        loginMethods: ["wallet", "email", "google"],
         embeddedWallets: {
           solana: { createOnLogin: "all-users" },
           ethereum: { createOnLogin: "off" },
