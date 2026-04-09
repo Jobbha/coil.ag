@@ -45,6 +45,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
   const [lendPositions, setLendPositions] = useState<LendPosition[]>([]);
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawStatus, setWithdrawStatus] = useState("");
+  const [closedPositions, setClosedPositions] = useState<(LendPosition & { closedAt: number })[]>([]);
 
   // Fetch real on-chain jlToken balances (direct RPC, not Jupiter API)
   useEffect(() => {
@@ -79,7 +80,7 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
       <div className="flex items-center justify-between px-4 pt-3 pb-0 border-b border-border-subtle">
         <div className="flex items-center gap-4">
           <TabBtn label={`Active (${totalActive})`} active={tab === "active"} onClick={() => setTab("active")} />
-          <TabBtn label={`History (${history.length})`} active={tab === "history"} onClick={() => setTab("history")} />
+          <TabBtn label={`History (${history.length + closedPositions.length})`} active={tab === "history"} onClick={() => setTab("history")} />
         </div>
         {totalYield > 0 && (
           <span className="text-base font-mono text-mint mb-2">
@@ -136,10 +137,11 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                 await posConn.confirmTransaction(sig, "confirmed");
 
                 setWithdrawStatus("Withdrawn!");
-                // Remove from display
+                // Move to closed history
+                setClosedPositions((prev) => [...prev, { ...pos, closedAt: Date.now() }]);
                 setLendPositions((prev) => prev.filter((p) => p.mint !== pos.mint));
-                // Also remove matching localStorage order
                 if (matchingOrder) onCancelOrder?.(matchingOrder.id);
+                setExpandedLend(null);
               } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : "Failed";
                 setWithdrawStatus(msg.includes("rejected") ? "Cancelled" : msg.slice(0, 50));
@@ -398,6 +400,52 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Closed/withdrawn positions in History tab */}
+      {tab === "history" && closedPositions.length > 0 && (
+        <div>
+          {closedPositions.map((pos) => (
+            <div key={pos.mint + pos.closedAt} className="border-t border-border-subtle px-4 py-3">
+              <div className="md:hidden space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm text-text-primary">{pos.symbol}</span>
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-bg-card text-text-dim">
+                      Closed
+                    </span>
+                  </div>
+                  <span className="text-xs text-text-dim">{new Date(pos.closedAt).toLocaleTimeString()}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span className="text-text-dim block">Was earning</span>
+                    <span className="text-text-primary font-mono">{pos.underlyingAmount.toFixed(2)} {pos.symbol}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-dim block">Value</span>
+                    <span className="text-text-primary font-mono">${pos.estimatedUsd.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-dim block">APY earned</span>
+                    <span className="text-mint font-mono">{pos.apy.toFixed(2)}%</span>
+                  </div>
+                </div>
+              </div>
+              <div className="hidden md:flex items-center text-sm">
+                <span className="w-[12%] font-semibold text-text-primary">{pos.symbol}</span>
+                <span className="w-[12%]">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-bg-card text-text-dim">Closed</span>
+                </span>
+                <span className="w-[14%] font-mono text-text-secondary">{pos.underlyingAmount.toFixed(4)} {pos.symbol}</span>
+                <span className="w-[10%] font-mono text-text-secondary">${pos.estimatedUsd.toFixed(2)}</span>
+                <span className="w-[10%] font-mono text-text-secondary">{pos.apy.toFixed(2)}%</span>
+                <span className="w-[14%] font-mono text-mint">Yield earned</span>
+                <span className="w-[28%] text-text-dim text-xs">Withdrawn {new Date(pos.closedAt).toLocaleString()}</span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

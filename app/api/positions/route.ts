@@ -101,12 +101,14 @@ export async function GET(req: NextRequest) {
 
       const amount = parsed.tokenAmount?.uiAmount ?? 0;
       if (amount <= 0) continue;
+      // Skip dust positions (< $0.05)
+      const jlPrice = jlPrices[mint] ?? 1;
+      if (amount * jlPrice < 0.05) continue;
 
       const rawAmount = parsed.tokenAmount?.amount ?? "0";
       const apy = vaultApys[jlInfo.assetMint] ?? 0;
 
-      // Calculate real underlying amount: jlToken amount × (jlToken price / underlying price)
-      const jlPrice = jlPrices[mint] ?? 1;
+      // Calculate real underlying amount
       const estimatedUsd = amount * jlPrice;
       // Underlying amount = USD value / 1 (stablecoins) or use price
       // For stablecoins: underlying amount ≈ USD value
