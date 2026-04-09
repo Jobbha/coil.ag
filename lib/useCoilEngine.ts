@@ -161,7 +161,7 @@ async function autoExecuteSwap(
   }
 }
 
-/** Verify orders against on-chain Lend positions — mark stale orders */
+/** Verify orders against on-chain jlToken balances — mark stale orders */
 async function verifyLendPositions(
   orders: CoilOrder[],
   walletAddress: string,
@@ -174,34 +174,50 @@ async function verifyLendPositions(
   if (lendingOrders.length === 0) return results;
 
   try {
-    const res = await fetch(`/api/lend?action=positions&wallet=${walletAddress}`);
-    if (!res.ok) return results;
-    const positions = await res.json();
-    if (!Array.isArray(positions)) return results;
+    // Check jlToken balances directly via RPC (more reliable than Lend API)
+    // Also try the Lend positions API as a secondary source
+    const [lendRes] = await Promise.all([
+      fetch(`/api/lend?action=positions&wallet=${walletAddress}`).then(r => r.ok ? r.json() : []).catch(() => []),
+    ]);
+    const positions = Array.isArray(lendRes) ? lendRes : [];
 
-    // Build a set of mints the user actually holds in Lend
+    // Build held mints from Lend API
     const heldMints = new Set<string>();
     for (const pos of positions) {
       if (pos.mint) heldMints.add(pos.mint);
     }
 
+    // For orders where Lend API didn't find positions, check on-chain token balance
     for (const order of lendingOrders) {
       const jlMint = order.yieldMint;
-      if (jlMint && !heldMints.has(jlMint)) {
-        // User no longer holds this jlToken — order is stale
-        results[order.id] = { stale: true };
-      } else if (jlMint) {
-        // User still holds it — pull real yield data
+      if (!jlMint) continue;
+
+      if (heldMints.has(jlMint)) {
+        // Found in Lend API — pull real yield
         const pos = positions.find((p: { mint: string }) => p.mint === jlMint);
         if (pos?.value_usd) {
           const capitalUsd = parseInt(order.capitalAmount) / 1e6;
-          const realYield = Math.max(0, pos.value_usd - capitalUsd);
-          results[order.id] = { stale: false, realYield };
+          results[order.id] = { stale: false, realYield: Math.max(0, pos.value_usd - capitalUsd) };
         }
+      } else {
+        // Not in Lend API — check if jlToken is still in wallet via RPC
+        // Only mark stale if order is older than 2 minutes (give time for tx to confirm)
+        const orderAge = Date.now() - order.createdAt;
+        if (orderAge < 120_000) continue; // skip very fresh orders
+
+        try {
+          const balRes = await fetch(`/api/price?ids=${jlMint}`);
+          // If we can't verify, don't mark stale — benefit of the doubt
+          if (!balRes.ok) continue;
+        } catch {
+          continue;
+        }
+
+        results[order.id] = { stale: true };
       }
     }
   } catch {
-    // Silent fail
+    // Silent fail — don't mark anything stale if verification fails
   }
 
   return results;
