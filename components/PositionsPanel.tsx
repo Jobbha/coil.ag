@@ -36,9 +36,14 @@ interface LendPosition {
 
 export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }: Props) {
   const { publicKey } = useWallet();
+  const { publicKey: posWallet, signTransaction: posSign } = useWallet();
+  const { connection: posConn } = useConnection();
   const [tab, setTab] = useState<"active" | "history">("active");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedLend, setExpandedLend] = useState<string | null>(null);
   const [lendPositions, setLendPositions] = useState<LendPosition[]>([]);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawStatus, setWithdrawStatus] = useState("");
 
   // Fetch real on-chain jlToken balances (direct RPC, not Jupiter API)
   useEffect(() => {
@@ -100,8 +105,51 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               ? `Limit order @ $${targetPrice.toFixed(2)}`
               : "Earning yield on idle capital";
 
+            async function handleWithdraw() {
+              if (!posWallet || !posSign) return;
+              setWithdrawing(true);
+              setWithdrawStatus("Building withdraw...");
+              try {
+                const res = await fetch("/api/lend", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    action: "withdraw",
+                    asset: pos.assetMint,
+                    amount: pos.amount,
+                    signer: posWallet.toBase58(),
+                  }),
+                });
+                if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed");
+                const { transaction: txBase64 } = await res.json();
+
+                setWithdrawStatus("Sign...");
+                const tx = VersionedTransaction.deserialize(Buffer.from(txBase64, "base64"));
+                const signed = await posSign(tx);
+
+                setWithdrawStatus("Sending...");
+                const sig = await posConn.sendRawTransaction(signed.serialize(), { skipPreflight: false });
+                await posConn.confirmTransaction(sig, "confirmed");
+
+                setWithdrawStatus("Withdrawn!");
+                // Remove from display
+                setLendPositions((prev) => prev.filter((p) => p.mint !== pos.mint));
+                // Also remove matching localStorage order
+                if (matchingOrder) onCancelOrder?.(matchingOrder.id);
+              } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : "Failed";
+                setWithdrawStatus(msg.includes("rejected") ? "Cancelled" : msg.slice(0, 50));
+              } finally {
+                setWithdrawing(false);
+                setTimeout(() => setWithdrawStatus(""), 4000);
+              }
+            }
+
+            const isLendExpanded = expandedLend === pos.mint;
+
             return (
-              <div key={pos.mint} className="border-t border-border-subtle px-4 py-3">
+              <div key={pos.mint} className="border-t border-border-subtle">
+                <button onClick={() => setExpandedLend(isLendExpanded ? null : pos.mint)} className="w-full px-4 py-3 text-left hover:bg-bg-card-hover transition-colors">
                 {/* Mobile */}
                 <div className="md:hidden space-y-2">
                   <div className="flex items-center justify-between">
@@ -143,8 +191,89 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                   <span className="w-[10%] font-mono text-text-secondary">${pos.estimatedUsd.toFixed(2)}</span>
                   <span className="w-[8%] font-mono text-mint">{pos.apy.toFixed(2)}%</span>
                   <span className="w-[14%] font-mono text-mint">~${dailyYield.toFixed(4)}/day</span>
-                  <span className="w-[30%] text-yellow text-sm font-medium">{waitingText}</span>
+                  <span className="w-[30%] text-yellow text-sm font-medium flex items-center gap-2">
+                    {waitingText}
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+                      className={`transition-transform ${isLendExpanded ? "rotate-180" : ""}`}>
+                      <path d="M1 1l4 4 4-4" />
+                    </svg>
+                  </span>
                 </div>
+                </button>
+
+                {/* Expanded detail panel */}
+                {isLendExpanded && (
+                  <div className="bg-bg-inset border-t border-border-subtle px-4 py-4 animate-fadeIn">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <h4 className="text-xs text-text-dim uppercase tracking-wider mb-2">Position Details</h4>
+                        <div className="space-y-1.5 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-text-dim">Token</span>
+                            <span className="text-text-primary font-mono">{pos.jlSymbol}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-text-dim">Underlying</span>
+                            <span className="text-text-primary font-mono">{pos.symbol}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-text-dim">Amount</span>
+                            <span className="text-text-primary font-mono">{pos.uiAmount.toFixed(6)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-text-dim">Value</span>
+                            <span className="text-text-primary font-mono">${pos.estimatedUsd.toFixed(4)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-xs text-text-dim uppercase tracking-wider mb-2">Yield</h4>
+                        <div className="space-y-1.5 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-text-dim">APY</span>
+                            <span className="text-mint font-mono">{pos.apy.toFixed(2)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-text-dim">Daily</span>
+                            <span className="text-mint font-mono">~${dailyYield.toFixed(4)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-text-dim">Monthly</span>
+                            <span className="text-mint font-mono">~${(dailyYield * 30).toFixed(2)}</span>
+                          </div>
+                          {targetPrice && (
+                            <div className="flex justify-between">
+                              <span className="text-text-dim">Limit Price</span>
+                              <span className="text-yellow font-mono">${targetPrice.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-xs text-text-dim uppercase tracking-wider mb-2">Actions</h4>
+                        <div className="space-y-2">
+                          <button
+                            onClick={handleWithdraw}
+                            disabled={withdrawing}
+                            className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                              withdrawing
+                                ? "bg-bg-card border border-border text-text-muted cursor-wait"
+                                : "border border-red/20 text-red bg-red/5 hover:bg-red/10"
+                            }`}
+                          >
+                            {withdrawing ? withdrawStatus : "Withdraw & Close"}
+                          </button>
+                          {withdrawStatus && !withdrawing && (
+                            <p className={`text-xs text-center ${withdrawStatus === "Withdrawn!" ? "text-green" : "text-red"}`}>
+                              {withdrawStatus}
+                            </p>
+                          )}
+                          <p className="text-xs text-text-dim text-center">Withdraws from Jupiter Lend back to your wallet</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
