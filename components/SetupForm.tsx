@@ -49,6 +49,7 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
   const [threshold, setThreshold] = useState("3");
   const [showDetails, setShowDetails] = useState(false);
   const [showTpSl, setShowTpSl] = useState(false);
+  const [compoundYield, setCompoundYield] = useState(true);
   const [expandedVault, setExpandedVault] = useState("");
 
   // Tx state
@@ -247,6 +248,7 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
         strategy: "limit",
       });
       order.lendTxSignature = sig;
+      order.compoundYield = compoundYield;
       order.triggerJwt = triggerJwt;
 
       onSubmit(order);
@@ -533,6 +535,26 @@ export default function SetupForm({ token, onSubmit, onBack, onTargetPriceChange
             );
           })()}
         </div>
+      )}
+
+      {/* Compound yield toggle */}
+      <button
+        type="button"
+        onClick={() => setCompoundYield(!compoundYield)}
+        className="flex items-center justify-between w-full text-sm"
+      >
+        <span className="text-text-muted flex items-center gap-1.5">
+          Compound yield into order
+          <InfoTip text="When enabled, yield earned while waiting is added to your buy — you get more of the target token. When disabled, yield stays as stablecoin in your wallet." />
+        </span>
+        <div className={`w-9 h-5 rounded-full transition-colors relative ${compoundYield ? "bg-mint" : "bg-border"}`}>
+          <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${compoundYield ? "translate-x-4" : "translate-x-0.5"}`} />
+        </div>
+      </button>
+      {compoundYield && capitalNum > 0 && (
+        <p className="text-xs text-mint">
+          After {Math.round(parseFloat(threshold) || 14)} days: ~${(capitalNum + capitalNum * (vaultApy / 100) / 365 * 14).toFixed(2)} total buy power
+        </p>
       )}
 
       {/* Threshold */}

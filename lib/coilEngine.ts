@@ -27,6 +27,9 @@ export interface CoilOrder {
   yieldSymbol: string | null; // e.g. "jlUSDC"
   strategy: "limit" | "dca" | "perps" | "predict";
 
+  // Yield compounding
+  compoundYield?: boolean; // true = yield added to buy, false = yield kept as stablecoin
+
   // DCA-specific fields
   dcaSliceCount?: number;
   dcaSliceInterval?: number; // ms between slices
