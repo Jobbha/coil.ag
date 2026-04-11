@@ -48,7 +48,8 @@
       "Bash(git commit -m 'fix: 90% width like HawkFi:*)",
       "Bash(xargs wc:*)",
       "Bash(git check-ignore:*)",
-      "Bash(find components/ app/ lib/ convex/ -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)"
+      "Bash(find components/ app/ lib/ convex/ -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)",
+      "Bash(git commit --allow-empty -m 'chore: redeploy with NEXT_PUBLIC_CONVEX_URL:*)"
     ]
   }
 }

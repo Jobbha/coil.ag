@@ -5,6 +5,7 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import type { CoilOrder, CoilState } from "@/lib/coilEngine";
 import { getJlToken } from "@/lib/jlTokens";
+import { syncClosedPosition } from "@/lib/convexSync";
 
 interface Props {
   orders: CoilOrder[];
@@ -153,6 +154,16 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                 setLendPositions((prev) => prev.filter((p) => p.mint !== pos.mint));
                 if (matchingOrder) onCancelOrder?.(matchingOrder.id);
                 setExpandedLend(null);
+                // Sync to Convex
+                if (posWallet) {
+                  syncClosedPosition(posWallet.toBase58(), {
+                    mint: pos.mint,
+                    symbol: pos.symbol,
+                    amount: pos.underlyingAmount,
+                    estimatedUsd: pos.estimatedUsd,
+                    apy: pos.apy,
+                  });
+                }
               } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : "Failed";
                 setWithdrawStatus(msg.includes("rejected") ? "Cancelled" : msg.slice(0, 50));

@@ -18,6 +18,8 @@ import PerpsPage from "@/components/PerpsPage";
 import DCAPage from "@/components/DCAPage";
 import PredictPage from "@/components/PredictPage";
 import { useCoilEngine } from "@/lib/useCoilEngine";
+import { syncOrderCreate, syncOrderCancel, syncUser } from "@/lib/convexSync";
+import { usePrivy } from "@privy-io/react-auth";
 import { POPULAR_TOKENS, type TokenListItem } from "@/lib/tokens";
 
 type PriceMap = Record<string, { usdPrice: number; priceChange24h: number }>;
@@ -25,6 +27,16 @@ type PriceMap = Record<string, { usdPrice: number; priceChange24h: number }>;
 export default function DashboardPage() {
   const { publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
+  const { authenticated, user: privyUser } = usePrivy();
+
+  // Sync user to Convex on auth
+  useEffect(() => {
+    if (!authenticated || !privyUser?.id) return;
+    const wallet = publicKey?.toBase58();
+    const email = privyUser.email?.address ?? privyUser.google?.email;
+    const ref = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ref") ?? undefined : undefined;
+    syncUser(privyUser.id, wallet, email, ref);
+  }, [authenticated, privyUser, publicKey]);
 
   // Build a signAndSend function for auto-execution
   const signAndSend = useCallback(
@@ -85,7 +97,15 @@ export default function DashboardPage() {
 
   function handleOrderSubmit(order: Parameters<typeof addOrder>[0]) {
     addOrder(order);
-    // Stay on the same view — positions panel will show the new order
+    // Sync to Convex
+    const wallet = publicKey?.toBase58();
+    if (wallet) syncOrderCreate(wallet, order);
+  }
+
+  function handleOrderCancel(orderId: string) {
+    removeOrder(orderId);
+    const wallet = publicKey?.toBase58();
+    if (wallet) syncOrderCancel(wallet);
   }
 
   return (
@@ -120,7 +140,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={removeOrder} />
+                  <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={handleOrderCancel} />
                 </div>
               ) : (
                 <div className="animate-fadeIn space-y-4" key="tokenlist">
@@ -154,7 +174,7 @@ export default function DashboardPage() {
           {activeTab === "Orders" && (
             <div className="animate-fadeIn space-y-4">
               <Portfolio orders={orders} />
-              <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={removeOrder} />
+              <PositionsPanel orders={orders} onUpdateOrder={updateOrder} onCancelOrder={handleOrderCancel} />
             </div>
           )}
 

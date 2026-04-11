@@ -5,6 +5,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { getUserByWallet } from "@/lib/convexSync";
 
 export default function ProfileTab() {
   const { publicKey, wallet, disconnect, connected } = useWallet();
@@ -14,6 +15,8 @@ export default function ProfileTab() {
   const [balance, setBalance] = useState<number | null>(null);
   const [solPrice, setSolPrice] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralCopied, setReferralCopied] = useState(false);
 
   const addr = publicKey?.toBase58() ?? "";
   const short = addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : "";
@@ -22,6 +25,10 @@ export default function ProfileTab() {
   useEffect(() => {
     if (!publicKey) return;
     connection.getBalance(publicKey).then((b) => setBalance(b / LAMPORTS_PER_SOL)).catch(() => {});
+    // Fetch referral code from Convex
+    getUserByWallet(publicKey.toBase58()).then((user) => {
+      if (user?.referralCode) setReferralCode(user.referralCode);
+    }).catch(() => {});
     // Fetch live SOL price
     fetch("/api/price?ids=So11111111111111111111111111111111111111112")
       .then((r) => r.json())
@@ -177,6 +184,29 @@ export default function ProfileTab() {
               <DetailRow label="Wallet" value={`${addr.slice(0, 8)}...${addr.slice(-8)}`} />
             )}
           </div>
+        </div>
+      )}
+
+      {/* Referral */}
+      {referralCode && (
+        <div className="glass-card p-3 md:p-5">
+          <h3 className="text-sm font-semibold text-text-primary mb-3">Referral Program</h3>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-bg-inset border border-border rounded-lg px-3 py-2 font-mono text-sm text-mint truncate">
+              {typeof window !== "undefined" ? `${window.location.origin}?ref=${referralCode}` : referralCode}
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}?ref=${referralCode}`);
+                setReferralCopied(true);
+                setTimeout(() => setReferralCopied(false), 2000);
+              }}
+              className="px-3 py-2 rounded-lg text-sm font-medium bg-mint text-bg-base hover:bg-mint-dark transition-colors"
+            >
+              {referralCopied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <p className="text-xs text-text-dim mt-2">Share this link to invite others to Coil</p>
         </div>
       )}
     </div>
