@@ -42,7 +42,9 @@
       "Bash(npx convex:*)",
       "WebFetch(domain:gitbook.com)",
       "Bash(git commit -m 'fix: wider days input field in yield calculator:*)",
-      "Bash(git commit -m 'fix: docs link → coil-1.gitbook.io/coil-docs:*)"
+      "Bash(git commit -m 'fix: docs link → coil-1.gitbook.io/coil-docs:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }

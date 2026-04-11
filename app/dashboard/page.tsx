@@ -90,7 +90,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex-1 flex flex-col items-center py-2 px-2 md:py-4 md:px-4">
-      <div className="w-full max-w-[1400px] md:w-[90%] lg:w-[80%] app-shell flex flex-col min-h-[92vh]">
+      <div className="w-full max-w-[1800px] md:w-[96%] lg:w-[94%] app-shell flex flex-col min-h-[92vh]">
         <TopNav activeTab={activeTab} onTabChange={setActiveTab} />
         <TickerStrip onTokenClick={handleTokenSelect} prices={prices} />
 
