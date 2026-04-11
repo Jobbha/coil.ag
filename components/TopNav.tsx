@@ -50,7 +50,7 @@ export default function TopNav({ activeTab, onTabChange }: Props) {
       {/* Right controls */}
       <div className="flex items-center gap-2.5">
         <a
-          href="https://docs.coil.ag"
+          href="https://coil-1.gitbook.io/coil-docs"
           target="_blank"
           rel="noopener noreferrer"
           className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-sm text-text-secondary hover:text-mint transition-colors"
