@@ -39,7 +39,8 @@
       "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const txs=JSON.parse\\(d\\);if\\(!txs.length\\)console.log\\('No transactions found'\\);txs.forEach\\(t=>{console.log\\(t.signature?.slice\\(0,20\\)+'...', t.type, t.description?.slice\\(0,80\\), 'time:', new Date\\(t.timestamp*1000\\).toLocaleTimeString\\(\\)\\)}\\)}\\)\")",
       "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('SOL:', j.nativeBalance/1e9\\);j.tokens?.forEach\\(t=>console.log\\(t.mint?.slice\\(0,8\\)+'...', t.amount, t.decimals\\)\\)}\\)\")",
       "Bash(node -e \"process.stdin.resume\\(\\);let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const txs=JSON.parse\\(d\\);txs.forEach\\(t=>{console.log\\(new Date\\(t.timestamp*1000\\).toISOString\\(\\).slice\\(0,19\\), t.type, t.description?.slice\\(0,120\\), '| err:', t.transactionError?.slice\\(0,50\\) ?? 'none'\\)}\\)}\\)\")",
-      "Bash(npx convex:*)"
+      "Bash(npx convex:*)",
+      "WebFetch(domain:gitbook.com)"
     ]
   }
 }

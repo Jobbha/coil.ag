@@ -48,29 +48,29 @@ export default function Hero({ onGetStarted }: { onGetStarted?: () => void }) {
 
         {/* Yield calculator */}
         <div className="flex items-center justify-center gap-2 flex-wrap text-sm">
-          <span className="text-text-dim">If I place a</span>
-          <div className="flex items-center gap-1 bg-bg-inset border border-border rounded-lg px-2 py-1">
-            <span className="text-text-dim">$</span>
+          <span className="text-text-secondary">If I place a</span>
+          <div className="flex items-center gap-1 bg-bg-card border border-border rounded-lg px-3 py-1.5">
+            <span className="text-text-muted">$</span>
             <input
               type="number"
               value={calcAmount}
               onChange={(e) => setCalcAmount(e.target.value)}
-              className="w-20 bg-transparent text-text-primary font-mono font-bold text-center outline-none"
+              className="w-24 bg-transparent text-white font-mono font-bold text-center outline-none"
             />
           </div>
-          <span className="text-text-dim">order waiting</span>
-          <div className="flex items-center gap-1 bg-bg-inset border border-border rounded-lg px-2 py-1">
+          <span className="text-text-secondary">order waiting</span>
+          <div className="flex items-center gap-1 bg-bg-card border border-border rounded-lg px-3 py-1.5">
             <input
               type="number"
               value={calcDays}
               onChange={(e) => setCalcDays(e.target.value)}
-              className="w-10 bg-transparent text-text-primary font-mono font-bold text-center outline-none"
+              className="w-12 bg-transparent text-white font-mono font-bold text-center outline-none"
             />
-            <span className="text-text-dim">days</span>
+            <span className="text-text-muted">days</span>
           </div>
         </div>
         {amt > 0 && days > 0 && (
-          <p className="text-lg font-bold font-mono text-mint">
+          <p className="text-xl font-bold font-mono text-mint">
             I earn ${yield5.toFixed(2)} – ${yield8.toFixed(2)} for free
           </p>
         )}
