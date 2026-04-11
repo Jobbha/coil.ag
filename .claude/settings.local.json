@@ -45,7 +45,10 @@
       "Bash(git commit -m 'fix: docs link → coil-1.gitbook.io/coil-docs:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:api.github.com)",
-      "Bash(git commit -m 'fix: 90% width like HawkFi:*)"
+      "Bash(git commit -m 'fix: 90% width like HawkFi:*)",
+      "Bash(xargs wc:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(find components/ app/ lib/ convex/ -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)"
     ]
   }
 }

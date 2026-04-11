@@ -53,7 +53,7 @@ export default function TopNav({ activeTab, onTabChange }: Props) {
           href="https://coil-1.gitbook.io/coil-docs"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:flex items-center px-3 py-1.5 rounded-full text-sm text-text-secondary hover:text-mint transition-colors"
+          className="flex items-center px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm text-text-secondary hover:text-mint transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
