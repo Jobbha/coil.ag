@@ -64,7 +64,7 @@ export default function Hero({ onGetStarted }: { onGetStarted?: () => void }) {
               type="number"
               value={calcDays}
               onChange={(e) => setCalcDays(e.target.value)}
-              className="w-12 bg-transparent text-white font-mono font-bold text-center outline-none"
+              className="w-16 bg-transparent text-white font-mono font-bold text-center outline-none"
             />
             <span className="text-text-muted">days</span>
           </div>
