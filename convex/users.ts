@@ -36,11 +36,12 @@ export const getOrCreate = mutation({
     // Look up referrer
     let referredBy: string | undefined;
     if (args.referredByCode) {
+      const code = args.referredByCode;
       const referrer = await ctx.db
         .query("users")
-        .withIndex("by_referral", (q) => q.eq("referralCode", args.referredByCode))
+        .withIndex("by_referral", (q) => q.eq("referralCode", code))
         .first();
-      if (referrer) referredBy = args.referredByCode;
+      if (referrer) referredBy = code;
     }
 
     const userId = await ctx.db.insert("users", {

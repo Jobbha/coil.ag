@@ -1,26 +1,53 @@
 /* eslint-disable */
-// Stub file — replaced by `npx convex dev` when connected
-import type { FilterApi, FunctionReference } from "convex/server";
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
 
-type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+import type * as orders from "../orders.js";
+import type * as positions from "../positions.js";
+import type * as users from "../users.js";
 
-export declare const api: {
-  users: {
-    getOrCreate: FunctionReference<"mutation", "public", any, any>;
-    getByPrivyId: FunctionReference<"query", "public", any, any>;
-    getByWallet: FunctionReference<"query", "public", any, any>;
-    getReferralStats: FunctionReference<"query", "public", any, any>;
-  };
-  orders: {
-    create: FunctionReference<"mutation", "public", any, any>;
-    updateState: FunctionReference<"mutation", "public", any, any>;
-    cancel: FunctionReference<"mutation", "public", any, any>;
-    getActive: FunctionReference<"query", "public", any, any>;
-    getHistory: FunctionReference<"query", "public", any, any>;
-    getByUser: FunctionReference<"query", "public", any, any>;
-  };
-  positions: {
-    recordClosed: FunctionReference<"mutation", "public", any, any>;
-    getClosed: FunctionReference<"query", "public", any, any>;
-  };
-};
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+
+declare const fullApi: ApiFromModules<{
+  orders: typeof orders;
+  positions: typeof positions;
+  users: typeof users;
+}>;
+
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;
+
+export declare const components: {};
