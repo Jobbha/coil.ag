@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     "coil defi",
   ],
   icons: {
-    icon: "/coil-icon.png",
+    icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     title: "Coil — Earn Yield on Idle Limit Orders | Solana DeFi",
     description:
       "Earn 3-8% APY on idle limit order capital via Jupiter Lend on Solana. Non-custodial — your funds earn yield until the exact moment your order executes.",
-    images: [{ url: "/coil-logo.png", width: 512, height: 512, alt: "Coil" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Coil — Earn Yield on Idle Limit Orders" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     title: "Coil — Earn Yield on Idle Limit Orders | Solana DeFi",
     description:
       "Earn 3-8% APY on idle limit order capital via Jupiter Lend. Non-custodial, auto-executing, zero idle time.",
-    images: ["/coil-logo.png"],
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

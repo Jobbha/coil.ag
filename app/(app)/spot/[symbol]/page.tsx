@@ -14,6 +14,11 @@ export default function SpotTokenPage() {
   const [token, setToken] = useState<TokenListItem | null>(null);
   const [liveTargetPrice, setLiveTargetPrice] = useState<number | null>(null);
 
+  // Set page title
+  useEffect(() => {
+    document.title = `Trade ${symbol.toUpperCase()} | Coil`;
+  }, [symbol]);
+
   useEffect(() => {
     // Try popular tokens first
     const found = POPULAR_TOKENS.find((t) => t.symbol.toLowerCase() === symbol.toLowerCase());
