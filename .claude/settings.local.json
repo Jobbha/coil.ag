@@ -59,7 +59,8 @@
       "Bash(node:*)",
       "Bash(git commit -m 'fix: crop coil icon whitespace + bigger display in nav:*)",
       "Bash(git commit -m 'fix: remove stale total yield from positions panel:*)",
-      "Bash(git commit -m 'fix: sitemap updated with all new routes + token pages:*)"
+      "Bash(git commit -m 'fix: sitemap updated with all new routes + token pages:*)",
+      "Bash(git commit -m 'feat: GA4 tracking — G-G8QYBRCGJ8:*)"
     ]
   }
 }
