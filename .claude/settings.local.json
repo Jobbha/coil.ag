@@ -54,7 +54,8 @@
       "Bash(git commit -m 'feat: points badge in top nav — shows total Coil Points next to account:*)",
       "Bash(git commit -m 'feat: custom Coil icon for points — replaces star SVG:*)",
       "Bash(git commit -m 'chore: remove original chatgpt filename from public:*)",
-      "Bash(git commit -m 'fix: show Coils badge at 0 points too:*)"
+      "Bash(git commit -m 'fix: show Coils badge at 0 points too:*)",
+      "Bash(git commit -m 'fix: withdraw exact jlToken balance — no percentage, no dust left:*)"
     ]
   }
 }

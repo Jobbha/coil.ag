@@ -121,8 +121,9 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               setWithdrawing(true);
               setWithdrawStatus("Building withdraw...");
               try {
-                // Use 98% of underlying amount to avoid exceeding actual balance
-                const underlyingSmallest = Math.floor(pos.underlyingAmount * 0.98 * Math.pow(10, 6)).toString();
+                // Use the raw jlToken amount (what the wallet actually holds) for withdrawal
+                // This is the exact on-chain balance, no estimation
+                const underlyingSmallest = pos.amount;
                 const res = await fetch("/api/lend", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
