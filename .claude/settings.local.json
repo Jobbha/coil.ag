@@ -58,7 +58,8 @@
       "Bash(git commit -m 'fix: withdraw exact jlToken balance — no percentage, no dust left:*)",
       "Bash(node:*)",
       "Bash(git commit -m 'fix: crop coil icon whitespace + bigger display in nav:*)",
-      "Bash(git commit -m 'fix: remove stale total yield from positions panel:*)"
+      "Bash(git commit -m 'fix: remove stale total yield from positions panel:*)",
+      "Bash(git commit -m 'fix: sitemap updated with all new routes + token pages:*)"
     ]
   }
 }
