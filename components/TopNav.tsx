@@ -67,9 +67,8 @@ export default function TopNav({ activeTab, onTabChange }: Props) {
                   onClick={() => onTabChange("Profile")}
                   className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-mint/10 border border-mint/20 hover:bg-mint/20 transition-all"
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-mint">
-                    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z" />
-                  </svg>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/coil-icon.png" alt="Coils" className="w-3.5 h-3.5 object-contain" />
                   <span className="text-xs font-bold font-mono text-mint">{pts}</span>
                 </button>
               )}

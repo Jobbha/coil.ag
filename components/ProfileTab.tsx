@@ -165,7 +165,11 @@ export default function ProfileTab() {
         </div>
 
         <div className="glass-card p-3 md:p-5">
-          <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Coil Points</p>
+          <p className="text-sm text-text-dim uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/coil-icon.png" alt="Coils" className="w-4 h-4 object-contain" />
+            Coils
+          </p>
           <p className="text-xl font-bold font-mono text-mint">{points?.total ?? 0}</p>
           <p className="text-xs text-text-muted mt-1">
             {points ? `${points.breakdown.orders} orders · ${points.breakdown.referrals} referrals` : "Earn by trading"}
