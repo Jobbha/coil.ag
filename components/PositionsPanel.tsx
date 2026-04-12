@@ -121,16 +121,16 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
               setWithdrawing(true);
               setWithdrawStatus("Building withdraw...");
               try {
-                // Use the raw jlToken amount (what the wallet actually holds) for withdrawal
-                // This is the exact on-chain balance, no estimation
-                const underlyingSmallest = pos.amount;
+                // Pass a very large amount — Jupiter Lend caps at max available
+                // This ensures we withdraw EVERYTHING, no dust left
+                const maxAmount = "999999999999999";
                 const res = await fetch("/api/lend", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     action: "withdraw",
                     asset: pos.assetMint,
-                    amount: underlyingSmallest,
+                    amount: maxAmount,
                     signer: posWallet.toBase58(),
                   }),
                 });

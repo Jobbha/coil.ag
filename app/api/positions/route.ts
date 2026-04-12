@@ -101,9 +101,9 @@ export async function GET(req: NextRequest) {
 
       const amount = parsed.tokenAmount?.uiAmount ?? 0;
       if (amount <= 0) continue;
-      // Skip dust positions (< $0.05)
+      // Skip dust positions (< $0.50)
       const jlPrice = jlPrices[mint] ?? 1;
-      if (amount * jlPrice < 0.05) continue;
+      if (amount * jlPrice < 0.50) continue;
 
       const rawAmount = parsed.tokenAmount?.amount ?? "0";
       const apy = vaultApys[jlInfo.assetMint] ?? 0;
