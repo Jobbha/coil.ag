@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import TopNav from "@/components/TopNav";
@@ -22,9 +23,19 @@ import { syncOrderCreate, syncOrderCancel, syncUser, awardPoints } from "@/lib/c
 import { usePrivy } from "@privy-io/react-auth";
 import { POPULAR_TOKENS, type TokenListItem } from "@/lib/tokens";
 
+import { Suspense } from "react";
+
 type PriceMap = Record<string, { usdPrice: number; priceChange24h: number }>;
 
 export default function DashboardPage() {
+  return (
+    <Suspense>
+      <DashboardInner />
+    </Suspense>
+  );
+}
+
+function DashboardInner() {
   const { publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
   const { authenticated, user: privyUser } = usePrivy();
@@ -59,11 +70,47 @@ export default function DashboardPage() {
     walletAddress: publicKey?.toBase58() ?? null,
     signAndSend: signTransaction ? signAndSend : undefined,
   });
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedToken, setSelectedToken] = useState<TokenListItem | null>(null);
-  const [activeTab, setActiveTab] = useState("Spot");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "Spot");
   const tokenListRef = useRef<HTMLDivElement>(null);
   const [prices, setPrices] = useState<PriceMap>({});
+
+  // Sync URL with state
+  function updateUrl(tab: string, token?: TokenListItem | null) {
+    const params = new URLSearchParams();
+    params.set("tab", tab);
+    if (token) {
+      params.set("token", token.symbol);
+      params.set("mint", token.mint);
+    }
+    router.replace(`/dashboard?${params.toString()}`, { scroll: false });
+  }
+
+  function handleTabChange(tab: string) {
+    setActiveTab(tab);
+    updateUrl(tab, tab === activeTab ? selectedToken : null);
+  }
   const [liveTargetPrice, setLiveTargetPrice] = useState<number | null>(null);
+
+  // Restore token from URL on mount
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const mint = searchParams.get("mint");
+    const symbol = searchParams.get("token");
+    if (mint && symbol) {
+      // Fetch token info to restore
+      fetch(`/api/tokens?mint=${mint}`)
+        .then((r) => r.json())
+        .then((t) => {
+          if (t?.mint) setSelectedToken({ ...t, usdPrice: t.usdPrice ?? 0, priceChange24h: 0 });
+        })
+        .catch(() => {});
+    }
+  }, [searchParams]);
 
   const fetchPrices = useCallback(async () => {
     const mints = POPULAR_TOKENS.map((t) => t.mint);
@@ -90,9 +137,9 @@ export default function DashboardPage() {
 
   function handleTokenSelect(token: TokenListItem) {
     setSelectedToken(token);
-    if (!["Spot", "Perps", "DCA"].includes(activeTab)) {
-      setActiveTab("Spot");
-    }
+    const tab = ["Spot", "Perps", "DCA"].includes(activeTab) ? activeTab : "Spot";
+    if (tab !== activeTab) setActiveTab(tab);
+    updateUrl(tab, token);
   }
 
   const orderCountRef = useRef(0);
@@ -120,7 +167,7 @@ export default function DashboardPage() {
   return (
     <div className="flex-1 flex flex-col items-center py-2 px-2 md:py-4 md:px-4">
       <div className="w-full max-w-[1800px] md:w-[95%] lg:w-[90%] app-shell flex flex-col min-h-[92vh]">
-        <TopNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <TopNav activeTab={activeTab} onTabChange={handleTabChange} />
         <TickerStrip onTokenClick={handleTokenSelect} prices={prices} />
 
         <div className="flex-1 p-2 md:p-4">
@@ -143,7 +190,7 @@ export default function DashboardPage() {
                         <SetupForm
                           token={selectedToken}
                           onSubmit={handleOrderSubmit}
-                          onBack={() => setSelectedToken(null)}
+                          onBack={() => { setSelectedToken(null); updateUrl(activeTab); }}
                           onTargetPriceChange={setLiveTargetPrice}
                         />
                       </div>
