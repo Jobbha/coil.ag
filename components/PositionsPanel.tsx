@@ -92,11 +92,6 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
           <TabBtn label={`Active (${totalActive})`} active={tab === "active"} onClick={() => setTab("active")} />
           <TabBtn label={`History (${history.length + closedPositions.length})`} active={tab === "history"} onClick={() => setTab("history")} />
         </div>
-        {totalYield > 0 && (
-          <span className="text-base font-mono text-mint mb-2">
-            Total yield: +${totalYield.toFixed(4)}
-          </span>
-        )}
       </div>
 
       {/* Table */}

@@ -57,7 +57,8 @@
       "Bash(git commit -m 'fix: show Coils badge at 0 points too:*)",
       "Bash(git commit -m 'fix: withdraw exact jlToken balance — no percentage, no dust left:*)",
       "Bash(node:*)",
-      "Bash(git commit -m 'fix: crop coil icon whitespace + bigger display in nav:*)"
+      "Bash(git commit -m 'fix: crop coil icon whitespace + bigger display in nav:*)",
+      "Bash(git commit -m 'fix: remove stale total yield from positions panel:*)"
     ]
   }
 }
