@@ -7,6 +7,7 @@ import { VersionedTransaction } from "@solana/web3.js";
 import { usePrivy } from "@privy-io/react-auth";
 import TopNav from "@/components/TopNav";
 import TickerStrip from "@/components/TickerStrip";
+import { trackPageView } from "@/lib/analytics";
 import { useCoilEngine } from "@/lib/useCoilEngine";
 import { syncOrderCreate, syncOrderCancel, syncUser, awardPoints } from "@/lib/convexSync";
 import { POPULAR_TOKENS, type TokenListItem } from "@/lib/tokens";
@@ -53,6 +54,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
   const { authenticated, user: privyUser } = usePrivy();
+
+  // Track page views on route change
+  const PAGE_TITLES: Record<string, string> = {
+    "/spot": "Spot Trading",
+    "/dca": "DCA",
+    "/perps": "Perps",
+    "/predict": "Predict",
+    "/yield": "Yield Vaults",
+    "/orders": "Orders",
+    "/profile": "Profile",
+  };
+
+  useEffect(() => {
+    const title = pathname.startsWith("/spot/")
+      ? `Trade ${pathname.split("/").pop()}`
+      : PAGE_TITLES[pathname] ?? "Coil";
+    trackPageView(pathname, title);
+  }, [pathname]);
 
   const signAndSend = useCallback(
     async (txBase64: string): Promise<string> => {
