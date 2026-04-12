@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import type { CoilOrder, CoilState } from "@/lib/coilEngine";
+import { KNOWN_MINTS } from "@/lib/coilEngine";
 import { getJlToken } from "@/lib/jlTokens";
 import { syncClosedPosition } from "@/lib/convexSync";
 
@@ -143,6 +144,33 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
                 setWithdrawStatus("Sending...");
                 const sig = await posConn.sendRawTransaction(signed.serialize(), { skipPreflight: false });
                 await posConn.confirmTransaction(sig, "confirmed");
+
+                // Swap back to USDC if vault token ≠ USDC
+                if (pos.assetMint !== KNOWN_MINTS.USDC) {
+                  setWithdrawStatus("Swapping back to USDC...");
+                  // Get actual balance of vault token after withdraw
+                  const balRes = await posConn.getParsedTokenAccountsByOwner(posWallet, { mint: new (await import("@solana/web3.js")).PublicKey(pos.assetMint) });
+                  const bal = balRes.value[0]?.account?.data?.parsed?.info?.tokenAmount?.amount;
+                  if (bal && bal !== "0") {
+                    const swapQs = new URLSearchParams({
+                      inputMint: pos.assetMint,
+                      outputMint: KNOWN_MINTS.USDC,
+                      amount: bal,
+                      taker: posWallet.toBase58(),
+                      slippageBps: "100",
+                    });
+                    const swapRes = await fetch(`/api/swap-quote?${swapQs}`);
+                    const swapData = swapRes.ok ? await swapRes.json() : null;
+                    if (swapData?.swapTransaction) {
+                      setWithdrawStatus("Sign swap...");
+                      const swapTx = VersionedTransaction.deserialize(Buffer.from(swapData.swapTransaction, "base64"));
+                      const signedSwap = await posSign(swapTx);
+                      setWithdrawStatus("Sending swap...");
+                      const swapSig = await posConn.sendRawTransaction(signedSwap.serialize(), { skipPreflight: false });
+                      await posConn.confirmTransaction(swapSig, "confirmed");
+                    }
+                  }
+                }
 
                 setWithdrawStatus("Withdrawn!");
                 // Move to closed history
