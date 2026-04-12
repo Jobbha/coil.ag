@@ -63,7 +63,8 @@
       "Bash(git commit -m 'feat: GA4 tracking — G-G8QYBRCGJ8:*)",
       "Bash(git commit -m 'feat: Google Search Console verification file:*)",
       "Bash(git commit -m 'fix: allow googletagmanager.com in CSP — GA4 was being blocked:*)",
-      "Bash(git commit -m 'fix: crop C-logo whitespace + bigger icon \\(h-10 w-10\\):*)"
+      "Bash(git commit -m 'fix: crop C-logo whitespace + bigger icon \\(h-10 w-10\\):*)",
+      "Bash(git commit -m 'fix: bigger C logo in PWA icons \\(85% fill\\):*)"
     ]
   }
 }
