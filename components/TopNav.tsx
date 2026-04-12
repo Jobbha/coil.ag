@@ -62,16 +62,14 @@ export default function TopNav({ activeTab, onTabChange }: Props) {
           )}
           {ready && authenticated && (
             <div className="flex items-center gap-1">
-              {pts > 0 && (
-                <button
-                  onClick={() => onTabChange("Profile")}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-mint/10 border border-mint/20 hover:bg-mint/20 transition-all"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/coil-icon.png" alt="Coils" className="w-3.5 h-3.5 object-contain" />
-                  <span className="text-xs font-bold font-mono text-mint">{pts}</span>
-                </button>
-              )}
+              <button
+                onClick={() => onTabChange("Profile")}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-mint/10 border border-mint/20 hover:bg-mint/20 transition-all"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/coil-icon.png" alt="Coils" className="w-3.5 h-3.5 object-contain" />
+                <span className="text-xs font-bold font-mono text-mint">{pts}</span>
+              </button>
               <button
                 onClick={() => onTabChange("Profile")}
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-lg bg-bg-card border border-border
