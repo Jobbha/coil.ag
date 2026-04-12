@@ -18,7 +18,7 @@ import PerpsPage from "@/components/PerpsPage";
 import DCAPage from "@/components/DCAPage";
 import PredictPage from "@/components/PredictPage";
 import { useCoilEngine } from "@/lib/useCoilEngine";
-import { syncOrderCreate, syncOrderCancel, syncUser } from "@/lib/convexSync";
+import { syncOrderCreate, syncOrderCancel, syncUser, awardPoints } from "@/lib/convexSync";
 import { usePrivy } from "@privy-io/react-auth";
 import { POPULAR_TOKENS, type TokenListItem } from "@/lib/tokens";
 
@@ -95,11 +95,20 @@ export default function DashboardPage() {
     }
   }
 
+  const orderCountRef = useRef(0);
+
   function handleOrderSubmit(order: Parameters<typeof addOrder>[0]) {
     addOrder(order);
-    // Sync to Convex
     const wallet = publicKey?.toBase58();
-    if (wallet) syncOrderCreate(wallet, order);
+    if (wallet) {
+      syncOrderCreate(wallet, order);
+      // Award points
+      orderCountRef.current++;
+      if (orderCountRef.current === 1) {
+        awardPoints(wallet, "first_order", "Placed first Coil order");
+      }
+      awardPoints(wallet, "order_placed", `Placed ${order.strategy} order`);
+    }
   }
 
   function handleOrderCancel(orderId: string) {

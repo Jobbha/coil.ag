@@ -9,6 +9,7 @@
  */
 
 import type * as orders from "../orders.js";
+import type * as points from "../points.js";
 import type * as positions from "../positions.js";
 import type * as users from "../users.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   orders: typeof orders;
+  points: typeof points;
   positions: typeof positions;
   users: typeof users;
 }>;

@@ -125,6 +125,18 @@ export async function getClosedPositions(wallet: string) {
   return convexQuery("positions:getClosed", { wallet });
 }
 
+// ─── Points ─────────────────────────────────────────
+
+export async function awardPoints(wallet: string, action: string, description: string) {
+  const user = await convexQuery("users:getByWallet", { wallet });
+  if (!user?._id) return;
+  return convexMutation("points:award", { userId: user._id, wallet, action, description });
+}
+
+export async function getPoints(wallet: string) {
+  return convexQuery("points:getTotal", { wallet });
+}
+
 // ─── Referral ───────────────────────────────────────
 
 export async function getReferralStats(wallet: string) {

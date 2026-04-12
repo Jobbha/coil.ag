@@ -5,7 +5,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { getUserByWallet } from "@/lib/convexSync";
+import { getUserByWallet, getReferralStats, getPoints } from "@/lib/convexSync";
 
 export default function ProfileTab() {
   const { publicKey, wallet, disconnect, connected } = useWallet();
@@ -16,7 +16,9 @@ export default function ProfileTab() {
   const [solPrice, setSolPrice] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralCount, setReferralCount] = useState(0);
   const [referralCopied, setReferralCopied] = useState(false);
+  const [points, setPoints] = useState<{ total: number; breakdown: { orders: number; referrals: number; yield: number } } | null>(null);
 
   const addr = publicKey?.toBase58() ?? "";
   const short = addr ? `${addr.slice(0, 6)}...${addr.slice(-6)}` : "";
@@ -25,9 +27,16 @@ export default function ProfileTab() {
   useEffect(() => {
     if (!publicKey) return;
     connection.getBalance(publicKey).then((b) => setBalance(b / LAMPORTS_PER_SOL)).catch(() => {});
-    // Fetch referral code from Convex
-    getUserByWallet(publicKey.toBase58()).then((user) => {
+    // Fetch referral code + stats from Convex
+    const addr = publicKey.toBase58();
+    getUserByWallet(addr).then((user) => {
       if (user?.referralCode) setReferralCode(user.referralCode);
+    }).catch(() => {});
+    getReferralStats(addr).then((stats) => {
+      if (stats?.count) setReferralCount(stats.count);
+    }).catch(() => {});
+    getPoints(addr).then((p) => {
+      if (p?.total !== undefined) setPoints(p);
     }).catch(() => {});
     // Fetch live SOL price
     fetch("/api/price?ids=So11111111111111111111111111111111111111112")
@@ -143,28 +152,36 @@ export default function ProfileTab() {
         </div>
       </div>
 
-      {/* Balances + Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="glass-card p-3 md:p-5">
           <p className="text-sm text-text-dim uppercase tracking-wider mb-1">SOL Balance</p>
-          <p className="text-2xl font-bold font-mono text-text-primary">
+          <p className="text-xl font-bold font-mono text-text-primary">
             {connected && balance !== null ? balance.toFixed(4) : "—"}
           </p>
-          <p className="text-sm text-text-muted mt-1">
+          <p className="text-xs text-text-muted mt-1">
             {connected && balance !== null && solPrice ? `≈ $${(balance * solPrice).toFixed(2)}` : connected ? "Loading..." : "Connect wallet"}
           </p>
         </div>
 
         <div className="glass-card p-3 md:p-5">
-          <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Active Coil Orders</p>
-          <p className="text-2xl font-bold font-mono text-mint">—</p>
-          <p className="text-sm text-text-muted mt-1">Check the Orders tab</p>
+          <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Coil Points</p>
+          <p className="text-xl font-bold font-mono text-mint">{points?.total ?? 0}</p>
+          <p className="text-xs text-text-muted mt-1">
+            {points ? `${points.breakdown.orders} orders · ${points.breakdown.referrals} referrals` : "Earn by trading"}
+          </p>
         </div>
 
         <div className="glass-card p-3 md:p-5">
-          <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Total Yield Earned</p>
-          <p className="text-2xl font-bold font-mono text-mint">—</p>
-          <p className="text-sm text-text-muted mt-1">Across all orders</p>
+          <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Referrals</p>
+          <p className="text-xl font-bold font-mono text-mint">{referralCount}</p>
+          <p className="text-xs text-text-muted mt-1">{referralCount > 0 ? `${referralCount * 50} pts earned` : "Share your link"}</p>
+        </div>
+
+        <div className="glass-card p-3 md:p-5">
+          <p className="text-sm text-text-dim uppercase tracking-wider mb-1">Total Yield</p>
+          <p className="text-xl font-bold font-mono text-mint">{points?.breakdown.yield ? `$${(points.breakdown.yield / 10).toFixed(2)}` : "—"}</p>
+          <p className="text-xs text-text-muted mt-1">Across all orders</p>
         </div>
       </div>
 
@@ -190,7 +207,12 @@ export default function ProfileTab() {
       {/* Referral */}
       {referralCode && (
         <div className="glass-card p-3 md:p-5">
-          <h3 className="text-sm font-semibold text-text-primary mb-3">Referral Program</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-text-primary">Referral Program</h3>
+            {referralCount > 0 && (
+              <span className="text-sm font-mono text-mint font-bold">{referralCount} referred</span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <div className="flex-1 bg-bg-inset border border-border rounded-lg px-3 py-2 font-mono text-sm text-mint truncate">
               {typeof window !== "undefined" ? `${window.location.origin}?ref=${referralCode}` : referralCode}

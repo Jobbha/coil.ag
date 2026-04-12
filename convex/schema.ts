@@ -78,4 +78,16 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_referrer", ["referrerId"]),
+
+  // Points system — rewards for activity
+  points: defineTable({
+    userId: v.id("users"),
+    wallet: v.string(),
+    action: v.string(), // "order_placed", "referral", "yield_earned", "first_order", "streak"
+    amount: v.number(), // points awarded
+    description: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_wallet", ["wallet"]),
 });
