@@ -75,15 +75,11 @@ export default function PositionsPanel({ orders, onCancelOrder, onUpdateOrder }:
     return () => clearInterval(iv);
   }, [publicKey]);
 
-  const active = orders.filter((o) =>
-    ["LENDING", "APPROACHING", "WITHDRAWING", "PLACED"].includes(o.state),
-  );
-  // Only show history orders that were actually filled (not stale expired localStorage data)
-  const history = orders.filter((o) =>
-    o.state === "FILLED",
-  );
-  // Count on-chain lend positions as active
-  const totalActive = active.length + lendPositions.length;
+  // On-chain positions are the source of truth for active trades
+  // localStorage orders only used for metadata (target price, TP/SL)
+  const active: CoilOrder[] = [];
+  const history = orders.filter((o) => o.state === "FILLED");
+  const totalActive = lendPositions.length;
   const totalYield = orders.reduce((s, o) => s + o.yieldEarned, 0);
   const displayOrders = tab === "active" ? active : history;
 
