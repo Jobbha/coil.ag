@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { getPoints } from "@/lib/convexSync";
 import ThemeToggle from "./ThemeToggle";
 
 interface Props {
@@ -13,6 +16,15 @@ const TABS = ["Spot", "Perps", "DCA", "Predict", "Yield", "Orders", "Profile"];
 
 export default function TopNav({ activeTab, onTabChange }: Props) {
   const { ready, authenticated, login, logout, user } = usePrivy();
+  const { publicKey } = useWallet();
+  const [pts, setPts] = useState(0);
+
+  useEffect(() => {
+    if (!authenticated || !publicKey) return;
+    getPoints(publicKey.toBase58()).then((p) => {
+      if (p?.total) setPts(p.total);
+    }).catch(() => {});
+  }, [authenticated, publicKey]);
 
   return (
     <nav className="border-b border-border-subtle">
@@ -50,6 +62,17 @@ export default function TopNav({ activeTab, onTabChange }: Props) {
           )}
           {ready && authenticated && (
             <div className="flex items-center gap-1">
+              {pts > 0 && (
+                <button
+                  onClick={() => onTabChange("Profile")}
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-mint/10 border border-mint/20 hover:bg-mint/20 transition-all"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-mint">
+                    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z" />
+                  </svg>
+                  <span className="text-xs font-bold font-mono text-mint">{pts}</span>
+                </button>
+              )}
               <button
                 onClick={() => onTabChange("Profile")}
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-lg bg-bg-card border border-border
