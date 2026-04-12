@@ -7,7 +7,7 @@ export default function Home() {
       <header className="border-b border-border-subtle bg-bg-base/80 backdrop-blur sticky top-0 z-50">
         <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-bold text-lg text-text-primary">
-            <img src="/coil-icon.png" alt="Coil" className="h-6 w-6" />
+            <img src="/C-logo-icon.png" alt="Coil" className="h-10 w-10 rounded-lg" />
             Coil
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-text-secondary">

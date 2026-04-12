@@ -43,6 +43,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
+    other: [{ rel: "manifest", url: "/manifest.json" }],
   },
   openGraph: {
     type: "website",
