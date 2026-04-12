@@ -83,7 +83,10 @@ export default function Home() {
 
         {/* How it works preview */}
         <section className="max-w-4xl mx-auto px-4 py-12">
-          <h2 className="text-2xl font-bold text-text-primary text-center mb-8">How Coil Works</h2>
+          <Link href="/how-it-works" className="block text-center">
+            <h2 className="text-2xl font-bold text-text-primary mb-2">How Coil Earns Yield on Limit Orders</h2>
+            <p className="text-sm text-text-secondary mb-8">Learn how yield-bearing limit orders work on Solana →</p>
+          </Link>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="rounded-xl border border-border-subtle bg-bg-card p-6">
               <div className="w-10 h-10 rounded-lg bg-mint/10 flex items-center justify-center text-mint font-bold text-lg mb-4">1</div>
@@ -132,15 +135,33 @@ export default function Home() {
           <p className="text-text-secondary mb-6">Trade and earn yield on popular Solana tokens</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             {["SOL", "USDC", "USDG", "JupUSD", "USDT", "JUP", "BONK", "RAY", "ETH", "mSOL", "JTO", "WEN", "PYTH", "RNDR"].map((t) => (
-              <span key={t} className="px-3 py-1.5 rounded-lg bg-bg-card border border-border-subtle text-sm font-mono text-text-secondary">{t}</span>
+              <Link key={t} href={`/spot/${t}`} className="px-3 py-1.5 rounded-lg bg-bg-card border border-border-subtle text-sm font-mono text-text-secondary hover:border-mint/30 hover:text-mint transition-colors">{t}</Link>
             ))}
+          </div>
+        </section>
+
+        {/* Internal links for SEO */}
+        <section className="max-w-4xl mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-3 gap-4">
+            <Link href="/how-it-works" className="rounded-xl border border-border-subtle bg-bg-card p-5 hover:border-mint/30 transition-colors group">
+              <h3 className="font-semibold text-text-primary group-hover:text-mint transition-colors mb-1">How yield on limit orders works</h3>
+              <p className="text-xs text-text-secondary">Learn how Coil earns 3-8% APY on idle limit order capital via Jupiter Lend →</p>
+            </Link>
+            <Link href="/fees" className="rounded-xl border border-border-subtle bg-bg-card p-5 hover:border-mint/30 transition-colors group">
+              <h3 className="font-semibold text-text-primary group-hover:text-mint transition-colors mb-1">Transparent fee structure</h3>
+              <p className="text-xs text-text-secondary">0.1% swap fee, 8% yield performance fee. No hidden costs, no subscriptions →</p>
+            </Link>
+            <Link href="/points" className="rounded-xl border border-border-subtle bg-bg-card p-5 hover:border-mint/30 transition-colors group">
+              <h3 className="font-semibold text-text-primary group-hover:text-mint transition-colors mb-1">Earn Coils points & referrals</h3>
+              <p className="text-xs text-text-secondary">100 points for your first order, 50 per referral. Start earning rewards →</p>
+            </Link>
           </div>
         </section>
 
         {/* CTA */}
         <section className="max-w-4xl mx-auto px-4 py-16 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-4">Stop leaving money on the table.</h2>
-          <p className="text-text-secondary mb-8">Your limit orders should earn yield. Start using Coil today.</p>
+          <p className="text-text-secondary mb-8">Your limit orders should earn yield on Solana. Start using Coil today.</p>
           <Link
             href="/dashboard"
             className="inline-block px-8 py-3 rounded-xl bg-mint text-bg-base font-semibold text-sm uppercase tracking-wide hover:bg-mint-dark transition-colors shadow-[0_0_20px_var(--mint-glow)]"
