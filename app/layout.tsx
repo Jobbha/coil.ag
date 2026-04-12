@@ -18,9 +18,56 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Coil — Earn While You Wait",
+  metadataBase: new URL("https://coil.ag"),
+  alternates: { canonical: "/" },
+  title: {
+    default: "Coil — Earn Yield on Idle Limit Orders | Solana DeFi",
+    template: "%s | Coil",
+  },
   description:
-    "Put idle limit-order capital to work. Earn yield via Jupiter Lend while waiting for your target price.",
+    "Earn 3-8% APY on idle limit order capital via Jupiter Lend on Solana. Non-custodial — your funds earn yield until the exact moment your order executes.",
+  keywords: [
+    "earn yield limit orders",
+    "solana defi yield",
+    "jupiter lend",
+    "idle capital defi",
+    "non-custodial yield solana",
+    "solana limit order yield",
+    "defi limit orders",
+    "crypto limit order platform",
+    "earn while waiting crypto",
+    "jlToken",
+    "OTOCO orders solana",
+    "coil defi",
+  ],
+  icons: {
+    icon: "/coil-icon.png",
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://coil.ag",
+    siteName: "Coil",
+    title: "Coil — Earn Yield on Idle Limit Orders | Solana DeFi",
+    description:
+      "Earn 3-8% APY on idle limit order capital via Jupiter Lend on Solana. Non-custodial — your funds earn yield until the exact moment your order executes.",
+    images: [{ url: "/coil-logo.png", width: 512, height: 512, alt: "Coil" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@coil_ag",
+    creator: "@coil_ag",
+    title: "Coil — Earn Yield on Idle Limit Orders | Solana DeFi",
+    description:
+      "Earn 3-8% APY on idle limit order capital via Jupiter Lend. Non-custodial, auto-executing, zero idle time.",
+    images: ["/coil-logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({
@@ -33,6 +80,101 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Coil",
+              url: "https://coil.ag",
+              logo: "https://coil.ag/coil-logo.png",
+              sameAs: ["https://x.com/coil_ag"],
+              description:
+                "Non-custodial DeFi platform on Solana that earns yield on idle limit order capital via Jupiter Lend.",
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Coil",
+              url: "https://coil.ag",
+              applicationCategory: "DeFi",
+              operatingSystem: "Web",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+                description: "Free to use. 0.1% swap fee on execution, 8% performance fee on earned yield only.",
+              },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "What is Coil?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Coil is a non-custodial DeFi platform on Solana that earns yield on idle limit order capital. When you place a limit order, your capital is deposited into Jupiter Lend to earn 3-8% variable APY. When the target price hits, Coil auto-executes — swapping the yield-bearing jlToken into your target token in a single atomic transaction.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "How does Coil earn yield on limit orders?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "When you place an order on Coil, your capital is deposited into Jupiter Lend, which issues jlTokens (yield-bearing receipt tokens). These jlTokens earn variable APY. When the spot price reaches your target, Jupiter Swap V2 natively routes through jlTokens — so the Lend redemption and token swap happen in one atomic transaction. Your money earns yield until the exact last second before execution.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Is Coil safe and non-custodial?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Yes. Coil is fully non-custodial — funds go directly to Jupiter Lend, never held by Coil. All transactions are signed by your own wallet. Coil uses supply-only lending (no borrowing), so there is zero liquidation risk. No custom smart contracts are deployed — Coil uses Jupiter's audited programs.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "What fees does Coil charge?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Coil charges a 0.1% swap fee on execution and an 8% performance fee on earned yield only (not on your principal). There are no deposit fees, no withdrawal fees, and no subscription fees.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "What tokens does Coil support?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Coil supports multiple Solana tokens including SOL, USDC, USDG, JupUSD, USDT, JUP, BONK, RAY, ETH, mSOL, JTO, WEN, PYTH, and RNDR. Multi-vault support includes USDC, USDG, JupUSD, SOL, and USDT vaults.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "What are OTOCO orders on Coil?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "OTOCO (One-Triggers-Other-Cancel) orders let you set an entry price, take-profit, and stop-loss in a single order via Jupiter Trigger. When your entry executes, the take-profit and stop-loss orders are automatically placed. This enables 24/7 automated trading with full risk management while your capital earns yield.",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
+      </head>
       <body className="min-h-full">
         {/* Neon background */}
         <div className="neon-bg">

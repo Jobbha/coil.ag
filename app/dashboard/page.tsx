@@ -210,11 +210,44 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <footer className="flex items-center justify-between px-6 py-3 border-t border-border-subtle text-sm text-text-dim">
-          <span>2026 © Coil — Jupiter Frontier Hackathon</span>
-          <div className="flex items-center gap-4">
-            <span>Built with Jupiter Developer Platform</span>
-            <span className="text-mint">developers.jup.ag</span>
+        <footer className="border-t border-border-subtle px-6 py-6 mt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+            <div>
+              <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Product</h4>
+              <div className="space-y-2">
+                <FooterLink label="Spot Trading" onClick={() => setActiveTab("Spot")} />
+                <FooterLink label="DCA" onClick={() => setActiveTab("DCA")} />
+                <FooterLink label="Yield Vaults" onClick={() => setActiveTab("Yield")} />
+                <FooterLink label="Orders" onClick={() => setActiveTab("Orders")} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Resources</h4>
+              <div className="space-y-2">
+                <FooterAnchor label="Documentation" href="https://coil-1.gitbook.io/coil-docs" />
+                <FooterAnchor label="Jupiter APIs" href="https://developers.jup.ag" />
+                <FooterAnchor label="GitHub" href="https://github.com/Jobbha/coil.ag" />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Community</h4>
+              <div className="space-y-2">
+                <FooterAnchor label="Twitter / X" href="https://x.com/coil_ag" />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Built With</h4>
+              <div className="space-y-2">
+                <FooterAnchor label="Jupiter" href="https://jup.ag" />
+                <FooterAnchor label="Solana" href="https://solana.com" />
+                <FooterAnchor label="Privy" href="https://privy.io" />
+                <FooterAnchor label="Convex" href="https://convex.dev" />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row items-center justify-between pt-4 border-t border-border-subtle text-xs text-text-dim gap-2">
+            <span>2026 Coil — Jupiter Frontier Hackathon</span>
+            <span>Non-custodial. Your keys, your funds.</span>
           </div>
         </footer>
       </div>
@@ -229,5 +262,21 @@ function StatBox({ label, value, sub }: { label: string; value: string; sub: str
       <p className="text-base font-bold font-mono text-text-primary mt-1">{value}</p>
       <p className="text-sm text-text-muted mt-0.5">{sub}</p>
     </div>
+  );
+}
+
+function FooterLink({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="block text-sm text-text-dim hover:text-mint transition-colors">
+      {label}
+    </button>
+  );
+}
+
+function FooterAnchor({ label, href }: { label: string; href: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="block text-sm text-text-dim hover:text-mint transition-colors">
+      {label}
+    </a>
   );
 }

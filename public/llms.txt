@@ -1,0 +1,34 @@
+# Coil
+
+> Earn yield on idle limit order capital on Solana.
+
+Coil is a non-custodial DeFi platform that turns idle limit order capital into yield-generating positions via Jupiter Lend.
+
+## How It Works
+
+1. Place a limit order on Coil
+2. Capital is deposited into Jupiter Lend, earning 3-8% variable APY via jlTokens
+3. When target price hits, Coil auto-executes — jlToken redemption + swap in one atomic transaction
+4. Zero idle time — your money earns yield until the exact last second
+
+## Key Features
+
+- Yield-bearing limit orders with auto-execution
+- OTOCO orders (entry + take-profit + stop-loss) via Jupiter Trigger
+- DCA with yield — remaining capital earns while slices execute
+- Multi-vault: USDC, USDG, JupUSD, SOL, USDT
+- Non-custodial — funds go to Jupiter Lend, never held by Coil
+- Zero liquidation risk (supply-only lending)
+
+## Fees
+
+- 0.1% swap fee on execution
+- 8% performance fee on earned yield only
+- No deposit, withdrawal, or subscription fees
+
+## Links
+
+- Site: https://coil.ag
+- Docs: https://coil-1.gitbook.io/coil-docs
+- Twitter: https://x.com/coil_ag
+- Full details: https://coil.ag/llms-full.txt

@@ -1,0 +1,128 @@
+# Coil — Full Product Reference
+
+## Overview
+
+Coil is a non-custodial DeFi trading platform on Solana that turns idle limit order capital into yield-generating positions. Built on top of Jupiter's Developer Platform, Coil combines 5 Jupiter APIs (Lend, Swap V2, Trigger, Price, Tokens) in a novel way that wasn't originally designed for.
+
+## The Problem
+
+Every time a trader places a limit order — on CEXs, on Jupiter, anywhere — their capital sits idle earning 0% while waiting for the price to hit. For a $50K order waiting 2 weeks, that's potentially $100+ in lost yield.
+
+## The Solution
+
+Coil automatically deposits your capital into Jupiter Lend the moment you place an order. Your money earns 3-8% APY via jlTokens (yield-bearing receipt tokens) while waiting. When the spot price approaches your target, Coil auto-executes — swapping the jlToken into your target token in a single transaction via Jupiter Swap V2. For 24/7 execution, orders are placed on Jupiter Trigger with full OTOCO support (Entry + Take Profit + Stop Loss).
+
+## Key Innovation
+
+Jupiter Swap V2 natively routes through jlTokens, meaning the Lend redemption and token swap happen in one atomic transaction. Your money earns yield until the exact last second before execution. Zero idle time.
+
+## Features
+
+### Yield-Bearing Limit Orders
+Place a limit order and earn variable APY via Jupiter Lend while waiting. When your target price hits, the order auto-executes. Your capital is never idle.
+
+### OTOCO Orders
+One-Triggers-Other-Cancel orders via Jupiter Trigger. Set an entry price, take-profit, and stop-loss in a single order. When entry executes, TP and SL are placed automatically. 24/7 automated trading with full risk management.
+
+### DCA with Yield
+Dollar-cost averaging reimagined. Deposit all capital to Lend upfront, swap out in scheduled slices while remaining capital earns yield. Compound yield toggle lets you add earned yield to your buy size.
+
+### Multi-Vault Support
+Supported vaults: USDC, USDG, JupUSD, SOL, USDT. Auto-swap from USDC into the correct vault token.
+
+### On-Chain Verification
+Reads jlToken balances directly via RPC every 15 seconds using SPL Token and Token-2022 programs. Full transparency.
+
+### Non-Custodial
+Funds go directly to Jupiter Lend, never held by Coil. All transactions signed by user's wallet. Zero counterparty risk.
+
+### Zero Liquidation Risk
+Supply-only lending — no borrowing. Your principal is never at risk of liquidation.
+
+## Supported Tokens
+
+SOL, USDC, USDG, JupUSD, USDT, JUP, BONK, RAY, ETH, mSOL, JTO, WEN, PYTH, RNDR
+
+## Fee Structure
+
+| Fee Type | Amount | Details |
+|----------|--------|---------|
+| Swap fee | 0.1% | On execution, via Jupiter platformFeeBps |
+| Yield performance fee | 8% | On earned yield only, not principal |
+| Deposit fee | 0% | Free |
+| Withdrawal fee | 0% | Free |
+| Subscription fee | 0% | Free |
+
+## Points System (Coils)
+
+| Action | Coils Earned |
+|--------|-------------|
+| First order placed | 100 |
+| Each subsequent order | 25 |
+| Successful referral | 50 |
+| Per $1 yield earned | 10 |
+
+## Referral System
+
+Each user gets a unique referral code. Share your link (coil.ag?ref=CODE). Referred users are tracked, referrer earns 50 Coils per signup.
+
+## Technical Architecture
+
+### Jupiter APIs Used
+- **Lend API** — deposit/withdraw for yield via jlTokens
+- **Swap V2 API** — token swaps + jlToken redemption in one atomic transaction
+- **Trigger API** — 24/7 limit order execution with TP/SL (OTOCO)
+- **Price API** — real-time price monitoring (10-second polling)
+- **Tokens API** — token search, metadata, verification
+
+### Tech Stack
+- Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS v4
+- Auth: Privy (email, Google, Phantom, Solflare wallets)
+- Database: Convex (users, orders, referrals, points)
+- Charts: Lightweight Charts + GeckoTerminal OHLCV
+- RPC: Helius
+- Deploy: Vercel
+
+## Security
+
+- Non-custodial — all funds go to Jupiter Lend programs
+- All transactions signed by user's own wallet
+- Input validation on all API routes
+- Content Security Policy headers
+- Slippage capped at 5%
+- No custom smart contracts deployed — uses Jupiter's audited programs
+
+## FAQ
+
+### What is Coil?
+Coil is a non-custodial DeFi platform on Solana that earns yield on idle limit order capital. When you place a limit order, your capital is deposited into Jupiter Lend to earn 3-8% variable APY. When the target price hits, Coil auto-executes in a single atomic transaction.
+
+### How does Coil earn yield on limit orders?
+Your capital is deposited into Jupiter Lend, which issues jlTokens (yield-bearing receipt tokens). These earn variable APY. When the spot price reaches your target, Jupiter Swap V2 routes through the jlToken — so Lend redemption and token swap happen in one transaction. Your money earns yield until the exact last second.
+
+### Is Coil safe?
+Yes. Coil is fully non-custodial. Funds go directly to Jupiter Lend, never held by Coil. All transactions are signed by your wallet. Supply-only lending means zero liquidation risk. No custom smart contracts — uses Jupiter's audited programs.
+
+### What fees does Coil charge?
+0.1% swap fee on execution and 8% performance fee on earned yield only. No deposit, withdrawal, or subscription fees.
+
+### What tokens does Coil support?
+SOL, USDC, USDG, JupUSD, USDT, JUP, BONK, RAY, ETH, mSOL, JTO, WEN, PYTH, RNDR.
+
+### What are OTOCO orders?
+One-Triggers-Other-Cancel orders. Set entry, take-profit, and stop-loss in one order. When entry executes, TP and SL are placed automatically via Jupiter Trigger. 24/7 automated trading.
+
+### What is a jlToken?
+A jlToken is a yield-bearing receipt token from Jupiter Lend. When you deposit USDC, you receive jlUSDC which appreciates in value as yield accrues. Jupiter Swap V2 can route through jlTokens natively, enabling atomic redemption + swap.
+
+### Does Coil have liquidation risk?
+No. Coil uses supply-only lending on Jupiter Lend. There is no borrowing involved, so your principal is never at risk of liquidation.
+
+## Links
+
+- Website: https://coil.ag
+- Documentation: https://coil-1.gitbook.io/coil-docs
+- Twitter/X: https://x.com/coil_ag
+- GitHub: https://github.com/Jobbha/coil.ag
+
+Built for the Jupiter Frontier Hackathon 2026.
